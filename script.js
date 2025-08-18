@@ -14,7 +14,7 @@ async function loadBets() {
     }
 
     return {
-      date: lastDate,
+      date: lastDate, // π.χ. 16/08/2025
       match: r.c[1]?.v || "",
       prediction: r.c[2]?.v || "",
       odds: r.c[3]?.v || "",
@@ -24,75 +24,89 @@ async function loadBets() {
     };
   });
 
-  renderParlays(rows);
-  renderSummary(rows);
+  // Αγνοούμε κενές σειρές χωρίς parlay odds
+  rows = rows.filter(r => r.parlayOdds !== "");
+
+  // Group ανά μήνα
+  const groupedByMonth = {};
+  rows.forEach(r => {
+    const [day, month, year] = r.date.split("/");
+    const monthKey = `${month}/${year}`; // π.χ. "08/2025"
+    if (!groupedByMonth[monthKey]) groupedByMonth[monthKey] = [];
+    groupedByMonth[monthKey].push(r);
+  });
+
+  renderMonthlyParlays(groupedByMonth);
 }
 
-function renderParlays(bets) {
+function renderMonthlyParlays(groupedByMonth) {
   const parlaysDiv = document.getElementById("parlays");
   parlaysDiv.innerHTML = "";
 
-  const groups = {};
-  bets.forEach(b => {
-    const key = `${b.date}_${b.parlayOdds}`;
-    if (!groups[key]) groups[key] = [];
-    groups[key].push(b);
-  });
+  Object.keys(groupedByMonth).forEach(monthKey => {
+    const monthSection = document.createElement("div");
+    monthSection.classList.add("month-section");
 
-  Object.values(groups).forEach(parlayBets => {
-    const totalOdds = parlayBets[0].parlayOdds || "-";
-    const date = parlayBets[0].date;
-    const result = parlayBets[0].result;
-    const profit = parlayBets[0].profit;
+    const monthTitle = document.createElement("h2");
+    monthTitle.textContent = `📅 Μήνας: ${monthKey}`;
+    monthSection.appendChild(monthTitle);
 
-    const parlayDiv = document.createElement("div");
-    parlayDiv.classList.add("parlay");
+    const bets = groupedByMonth[monthKey];
 
-    parlayDiv.innerHTML = `
-      <h3>${date} | Απόδοση: <span class="odds">${totalOdds}</span></h3>
-      <div class="bets">
-        ${parlayBets.map(b => `
-          <div class="bet">
-            ${b.match} (${b.prediction}) - Απόδοση: <span class="odds">${b.odds}</span>
-          </div>
-        `).join("")}
-      </div>
-      <p>Αποτέλεσμα: <span class="${result === 'Profit' ? 'profit' : 'loss'}">${result}</span> 
-      | Κέρδος: <span class="${profit >= 0 ? 'profit' : 'loss'}">${profit}</span></p>
+    // Group parlay ανά Parlay Odds
+    const groups = {};
+    bets.forEach(b => {
+      const key = b.parlayOdds;
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(b);
+    });
+
+    // Στατιστικά του μήνα
+    const totalParlays = Object.keys(groups).length;
+    const wins = Object.values(groups).filter(g => g[0].result === "Profit").length;
+    const losses = Object.values(groups).filter(g => g[0].result === "Loss").length;
+    const winRate = totalParlays > 0 ? ((wins / totalParlays) * 100).toFixed(1) : 0;
+    const totalProfit = bets.reduce((acc, b) => acc + b.profit, 0);
+
+    const summaryDiv = document.createElement("div");
+    summaryDiv.classList.add("summary");
+    summaryDiv.innerHTML = `
+      📌 Παρολί: ${totalParlays} |
+      ✅ Νίκες: ${wins} |
+      ❌ Ήττες: ${losses} |
+      📈 Winrate: ${winRate}% |
+      💰 Profit: <span class="${totalProfit >= 0 ? 'profit' : 'loss'}">${totalProfit}</span>
     `;
+    monthSection.appendChild(summaryDiv);
 
-    parlaysDiv.appendChild(parlayDiv);
+    // Προβολή parlay
+    Object.values(groups).forEach(parlayBets => {
+      const totalOdds = parlayBets[0].parlayOdds;
+      const result = parlayBets[0].result;
+      const profit = parlayBets[0].profit;
+
+      const parlayDiv = document.createElement("div");
+      parlayDiv.classList.add("parlay");
+
+      parlayDiv.innerHTML = `
+        <h3>Απόδοση: <span class="odds">${totalOdds}</span></h3>
+        <div class="bets">
+          ${parlayBets.map(b => `
+            <div class="bet">
+              ${b.match} (${b.prediction}) - Απόδοση: <span class="odds">${b.odds}</span>
+            </div>
+          `).join("")}
+        </div>
+        <p>Αποτέλεσμα: <span class="${result === 'Profit' ? 'profit' : 'loss'}">${result || "-"}</span> 
+        | Κέρδος: <span class="${profit >= 0 ? 'profit' : 'loss'}">${profit}</span></p>
+      `;
+
+      monthSection.appendChild(parlayDiv);
+    });
+
+    parlaysDiv.appendChild(monthSection);
   });
-}
-
-function renderSummary(bets) {
-  const summaryDiv = document.getElementById("summary");
-
-  const keys = [...new Set(bets.map(b => `${b.date}_${b.parlayOdds}`))];
-  const totalParlays = keys.length;
-
-  const resultsByKey = {};
-  keys.forEach(k => {
-    const group = bets.filter(b => `${b.date}_${b.parlayOdds}` === k);
-    resultsByKey[k] = group[0].result;
-  });
-
-  const wins = Object.values(resultsByKey).filter(r => r === "Profit").length;
-  const losses = Object.values(resultsByKey).filter(r => r === "Loss").length;
-  const winRate = totalParlays > 0 ? ((wins / totalParlays) * 100).toFixed(1) : 0;
-
-  const totalProfit = bets.reduce((acc, b) => acc + b.profit, 0);
-
-  summaryDiv.innerHTML = `
-    📌 Παρολί: ${totalParlays} |
-    ✅ Νίκες: ${wins} |
-    ❌ Ήττες: ${losses} |
-    📈 Winrate: ${winRate}% |
-    💰 Profit: <span class="${totalProfit >= 0 ? 'profit' : 'loss'}">${totalProfit}</span>
-  `;
 }
 
 loadBets();
-
-// 🔄 Αυτόματο refresh κάθε 60 δευτερόλεπτα
 setInterval(loadBets, 60000);
