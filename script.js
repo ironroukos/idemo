@@ -1,17 +1,16 @@
 const sheetID = "1hqgI3ZtPxQfSTA9y5w3jBmedTZP7sqlMGIVqm4mqZB8"; // 🔹 βάλε το ID του Google Sheet σου
 const url = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:json`;
 
-
 async function loadBets() {
   const res = await fetch(url);
   const text = await res.text();
   const json = JSON.parse(text.substr(47).slice(0, -2));
 
-  let lastDate = ""; // κρατάμε την τελευταία ημερομηνία για merged cells
+  let lastDate = "";
 
-  let rows = json.table.rows.map(r => {
+  let rows = json.table.rows.slice(1).map(r => {
     if (r.c[0]?.v) {
-      lastDate = r.c[0].v; // αν βρούμε νέα ημερομηνία, την κρατάμε
+      lastDate = r.c[0].v;
     }
 
     return {
@@ -33,76 +32,74 @@ function renderParlays(bets) {
   const parlaysDiv = document.getElementById("parlays");
   parlaysDiv.innerHTML = "";
 
-  let parlayIndex = 0;
-  let buffer = [];
+  // 🔑 Ομαδοποιούμε με βάση ημερομηνία + συνολική απόδοση
+  const groups = {};
+  bets.forEach(b => {
+    const key = `${b.date}_${b.parlayOdds}`;
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(b);
+  });
 
-  for (let i = 0; i < bets.length; i++) {
-    buffer.push(bets[i]);
+  Object.values(groups).forEach(parlayBets => {
+    const totalOdds = parlayBets[0].parlayOdds || "-";
+    const date = parlayBets[0].date;
+    const result = parlayBets[0].result;
+    const profit = parlayBets[0].profit;
 
-    if (i + 1 >= bets.length || bets[i+1].date !== bets[i].date) {
-      parlayIndex++;
-      const parlayBets = buffer;
-      buffer = [];
+    const parlayDiv = document.createElement("div");
+    parlayDiv.classList.add("parlay");
 
-      const totalOdds = parlayBets[0].parlayOdds || "-";
-      const date = parlayBets[0].date;
-      const result = parlayBets[0].result;
-      const profit = parlayBets[0].profit;
-
-      const parlayDiv = document.createElement("div");
-      parlayDiv.classList.add("parlay");
-
-      if (result === "Profit") {
-        parlayDiv.classList.add("profit");
-      } else if (result === "Loss") {
-        parlayDiv.classList.add("loss");
-      }
-
-      parlayDiv.innerHTML = `
-        <h3>Παρολί ${parlayIndex} - ${date} (Απόδοση: <span class="odds">${totalOdds}</span>)</h3>
-        <div class="bets">
-          ${parlayBets.map(b => `
-            <div class="bet">
-              ${b.match} (${b.prediction}) - Απόδοση: <span class="odds">${b.odds}</span>
-            </div>
-          `).join("")}
-        </div>
-        <p>Αποτέλεσμα: <span class="${result === 'Profit' ? 'profit' : 'loss'}">${result}</span> 
-        | Κέρδος: <span class="${profit >= 0 ? 'profit' : 'loss'}">${profit}</span></p>
-      `;
-
-      parlaysDiv.appendChild(parlayDiv);
+    if (result === "Profit") {
+      parlayDiv.classList.add("profit");
+    } else if (result === "Loss") {
+      parlayDiv.classList.add("loss");
     }
-  }
+
+    parlayDiv.innerHTML = `
+      <h3>${date} | Απόδοση: <span class="odds">${totalOdds}</span></h3>
+      <div class="bets">
+        ${parlayBets.map(b => `
+          <div class="bet">
+            ${b.match} (${b.prediction}) - Απόδοση: <span class="odds">${b.odds}</span>
+          </div>
+        `).join("")}
+      </div>
+      <p>Αποτέλεσμα: <span class="${result === 'Profit' ? 'profit' : 'loss'}">${result}</span> 
+      | Κέρδος: <span class="${profit >= 0 ? 'profit' : 'loss'}">${profit}</span></p>
+    `;
+
+    parlaysDiv.appendChild(parlayDiv);
+  });
 }
 
 function renderSummary(bets) {
   const summaryDiv = document.getElementById("summary");
 
-  // Παίρνουμε μοναδικές ημερομηνίες = αριθμός παρολί
-  const dates = [...new Set(bets.map(b => b.date))];
-  const totalParlays = dates.length;
+  // Παίρνουμε μοναδικά κλειδιά (date + parlayOdds)
+  const keys = [...new Set(bets.map(b => `${b.date}_${b.parlayOdds}`))];
+  const totalParlays = keys.length;
 
-  // Μετράμε αποτελέσματα
-  const resultsByDate = {};
-  dates.forEach(d => {
-    const group = bets.filter(b => b.date === d);
-    resultsByDate[d] = group[0].result;
+  // Υπολογισμός αποτελεσμάτων ανά parlay
+  const resultsByKey = {};
+  keys.forEach(k => {
+    const group = bets.filter(b => `${b.date}_${b.parlayOdds}` === k);
+    resultsByKey[k] = group[0].result;
   });
 
-  const wins = Object.values(resultsByDate).filter(r => r === "Profit").length;
-  const losses = Object.values(resultsByDate).filter(r => r === "Loss").length;
+  const wins = Object.values(resultsByKey).filter(r => r === "Profit").length;
+  const losses = Object.values(resultsByKey).filter(r => r === "Loss").length;
   const winRate = totalParlays > 0 ? ((wins / totalParlays) * 100).toFixed(1) : 0;
 
   const totalProfit = bets.reduce((acc, b) => acc + b.profit, 0);
 
   summaryDiv.innerHTML = `
-    📌 Συνολικά Παρολί: ${totalParlays} |
+    📌 Παρολί: ${totalParlays} |
     ✅ Νίκες: ${wins} |
     ❌ Ήττες: ${losses} |
     📈 Winrate: ${winRate}% |
-    💰 Συνολικό Profit: <span class="${totalProfit >= 0 ? 'profit' : 'loss'}">${totalProfit}</span>
+    💰 Profit: <span class="${totalProfit >= 0 ? 'profit' : 'loss'}">${totalProfit}</span>
   `;
 }
 
 loadBets();
+
