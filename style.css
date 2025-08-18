@@ -12,55 +12,15 @@ h1 {
   margin-bottom: 20px;
 }
 
-#monthButtons button {
+/* Headings: h1, season, month buttons */
+h1,
+.month-toggle-btn,
+.season-btn {
   font-family: 'Dancing Script', cursive;
-}
-
-.parlay-date {
-  font-weight: bold;
-  margin-top: 15px;
-  color: white;
-}
-
-.parlay {
-  border: 2px solid;
-  padding: 10px;
-  margin: 10px 0;
-  display: none;
-  border-radius: 5px;
-}
-
-.parlay.show {
-  display: block;
-  transition: all 0.3s ease;
-}
-
-.parlay.won {
-  border-color: limegreen;
-}
-
-.parlay.lost {
-  border-color: red;
-}
-
-.total-odds {
-  font-weight: bold;
-  margin-bottom: 5px;
-}
-
-.match {
-  display: flex;
-  justify-content: space-between;
-}
-
-#stats {
-  margin-bottom: 20px;
-  font-size: 1.2em;
 }
 
 /* --- Classic Month/Season Button Styles --- */
 .month-toggle-btn, .season-btn {
-  font-family: 'Dancing Script', cursive;
   font-size: 2.2rem;
   background: transparent;
   color: white;
@@ -123,13 +83,6 @@ h1 {
   }
 }
 
-/* Headings: h1, season, month buttons */
-h1,
-.month-toggle-btn,
-.season-btn {
-  font-family: 'Dancing Script', cursive;
-}
-
 /* Match and parlay details: Use Arial */
 .parlay-date,
 .total-odds,
@@ -141,4 +94,46 @@ h1,
 /* Optional: Make .parlay .match a little smaller for odds/details */
 .parlay .match {
   font-size: 1.15rem;
+}
+
+.parlay-date {
+  font-weight: bold;
+  margin-top: 15px;
+  color: white;
+}
+
+.parlay {
+  border: 2px solid;
+  padding: 10px;
+  margin: 10px 0;
+  display: none;
+  border-radius: 5px;
+}
+
+.parlay.show {
+  display: block;
+  transition: all 0.3s ease;
+}
+
+.parlay.won {
+  border-color: limegreen;
+}
+
+.parlay.lost {
+  border-color: red;
+}
+
+.total-odds {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.match {
+  display: flex;
+  justify-content: space-between;
+}
+
+#stats {
+  margin-bottom: 20px;
+  font-size: 1.2em;
 }
