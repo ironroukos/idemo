@@ -40,11 +40,68 @@ async function fetchData() {
       r.date && r.match && r.prediction && r.odds
     );
 
-    populateSeasonAndMonths();
-  } catch (err) {
-    console.error("Error fetching data", err);
-  }
-}
+   function populateSeasonAndMonths() {
+  // ...parlay grouping code above...
+
+  const container = document.getElementById("monthButtons");
+  container.innerHTML = "";
+
+  // 1️⃣ Season Button
+  const seasonBtn = document.createElement("button");
+  seasonBtn.className = "month-toggle-btn season-btn";
+  seasonBtn.innerHTML = `
+    <span class="month-name">Season 2025-2026</span>
+    <span class="month-stats">
+      Wins: ${seasonStats.wins} | 
+      Losses: ${seasonStats.losses} | 
+      Profit: <span style="color:${seasonStats.profit>=0?'limegreen':'red'}">${seasonStats.profit}</span>
+    </span>
+  `;
+  seasonBtn.disabled = true;
+  seasonBtn.style.pointerEvents = "none";
+  container.appendChild(seasonBtn);
+
+  // 2️⃣ Month Buttons
+  Object.keys(parlaysByMonth).forEach(month => {
+    // Calculate stats for the month
+    let monthParlays = {};
+    Object.values(parlaysByMonth[month]).forEach(dateGroup => {
+      Object.values(dateGroup).forEach(parlayArr => {
+        const key = parlayArr[0].date + "_" + parlayArr[0].parlayOdds;
+        monthParlays[key] = parlayArr;
+      });
+    });
+    const stats = getParlayStats(monthParlays);
+
+    const btn = document.createElement("button");
+    btn.className = "month-toggle-btn";
+    btn.innerHTML = `
+      <span class="month-name">${month}</span>
+      <span class="month-stats">
+        Wins: ${stats.wins} | 
+        Losses: ${stats.losses} | 
+        Profit: <span style="color:${stats.profit>=0?'limegreen':'red'}">${stats.profit}</span>
+      </span>
+    `;
+
+    // Parlay dropdown logic
+    const parlaysContainer = document.createElement("div");
+    parlaysContainer.className = "parlays-dropdown";
+    parlaysContainer.style.display = "none";
+    parlaysContainer.style.marginTop = "5px";
+    renderParlaysForMonth(parlaysByMonth[month], parlaysContainer);
+
+    btn.addEventListener("click", () => {
+      document.querySelectorAll('.parlays-dropdown').forEach(el => {
+        if (el !== parlaysContainer) el.style.display = "none";
+      });
+      parlaysContainer.style.display = parlaysContainer.style.display === "none" ? "block" : "none";
+    });
+
+    container.appendChild(btn);
+    container.appendChild(parlaysContainer);
+  });
+} 
 
 function getParlayStats(parlays) {
   // Each parlay group = one win/loss (parlay[0].result), sum profit
