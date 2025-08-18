@@ -55,6 +55,10 @@ h1 {
   text-align: center;
   font-weight: bold;
   font-size: 1.2em;
+  margin-top: 30px;      /* extra space before a new date */
+  margin-bottom: 10px;   /* space between date and first parlay */
+  border-bottom: 1px solid gray;  /* subtle line under date */
+  padding-bottom: 5px;
 }
 
 .total-odds {
