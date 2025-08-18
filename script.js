@@ -1,20 +1,29 @@
 const sheetID = "1hqgI3ZtPxQfSTA9y5w3jBmedTZP7sqlMGIVqm4mqZB8"; // 🔹 βάλε το ID του Google Sheet σου
 const url = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:json`;
 
+
 async function loadBets() {
   const res = await fetch(url);
   const text = await res.text();
   const json = JSON.parse(text.substr(47).slice(0, -2));
 
-  let rows = json.table.rows.map(r => ({
-    date: r.c[0]?.v || "",
-    match: r.c[1]?.v || "",
-    prediction: r.c[2]?.v || "",
-    odds: r.c[3]?.v || "",
-    parlayOdds: r.c[4]?.v || "",
-    result: r.c[5]?.v || "",
-    profit: parseFloat(r.c[6]?.v) || 0
-  }));
+  let lastDate = ""; // κρατάμε την τελευταία ημερομηνία για merged cells
+
+  let rows = json.table.rows.map(r => {
+    if (r.c[0]?.v) {
+      lastDate = r.c[0].v; // αν βρούμε νέα ημερομηνία, την κρατάμε
+    }
+
+    return {
+      date: lastDate,
+      match: r.c[1]?.v || "",
+      prediction: r.c[2]?.v || "",
+      odds: r.c[3]?.v || "",
+      parlayOdds: r.c[4]?.v || "",
+      result: r.c[5]?.v || "",
+      profit: parseFloat(r.c[6]?.v) || 0
+    };
+  });
 
   renderParlays(rows);
   renderSummary(rows);
@@ -70,11 +79,22 @@ function renderParlays(bets) {
 function renderSummary(bets) {
   const summaryDiv = document.getElementById("summary");
 
-  const totalProfit = bets.reduce((acc, b) => acc + b.profit, 0);
-  const totalParlays = [...new Set(bets.map(b => b.date))].length;
-  const wins = bets.filter(b => b.result === "Profit").length;
-  const losses = bets.filter(b => b.result === "Loss").length;
+  // Παίρνουμε μοναδικές ημερομηνίες = αριθμός παρολί
+  const dates = [...new Set(bets.map(b => b.date))];
+  const totalParlays = dates.length;
+
+  // Μετράμε αποτελέσματα
+  const resultsByDate = {};
+  dates.forEach(d => {
+    const group = bets.filter(b => b.date === d);
+    resultsByDate[d] = group[0].result;
+  });
+
+  const wins = Object.values(resultsByDate).filter(r => r === "Profit").length;
+  const losses = Object.values(resultsByDate).filter(r => r === "Loss").length;
   const winRate = totalParlays > 0 ? ((wins / totalParlays) * 100).toFixed(1) : 0;
+
+  const totalProfit = bets.reduce((acc, b) => acc + b.profit, 0);
 
   summaryDiv.innerHTML = `
     📌 Συνολικά Παρολί: ${totalParlays} |
@@ -86,4 +106,3 @@ function renderSummary(bets) {
 }
 
 loadBets();
-
