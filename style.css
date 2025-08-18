@@ -1,1 +1,89 @@
+body {
+  font-family: Arial, sans-serif;
+  background: #f8f9fa;
+  padding: 20px;
+}
+
+h1 {
+  text-align: center;
+  color: #333;
+  font-family: 'Dancing Script', cursive; /* 🔹 Καλλιγραφική */
+  font-size: 3rem;
+  margin-bottom: 30px;
+}
+
+.tracker {
+  max-width: 1000px;
+  margin: auto;
+}
+
+button {
+  margin-bottom: 20px;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 8px;
+  background: #007bff;
+  color: white;
+  cursor: pointer;
+}
+
+.summary {
+  background: #fff3cd;
+  border-left: 6px solid #ffc107;
+  padding: 15px;
+  margin-bottom: 20px;
+  border-radius: 10px;
+  font-weight: bold;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.parlay {
+  margin-bottom: 20px;
+  padding: 15px;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  transition: 0.3s ease;
+}
+
+.parlay h3 {
+  margin: 0 0 10px;
+}
+
+.bets {
+  margin-left: 15px;
+}
+
+.bet {
+  padding: 5px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.bet:last-child {
+  border-bottom: none;
+}
+
+.odds {
+  font-weight: bold;
+}
+
+.profit {
+  color: green;
+  font-weight: bold;
+}
+
+.loss {
+  color: red;
+  font-weight: bold;
+}
+
+/* 🔥 Background για το συνολικό κουτί */
+.parlay.profit {
+  background: #d4edda;
+  border-left: 6px solid #28a745;
+}
+
+.parlay.loss {
+  background: #f8d7da;
+  border-left: 6px solid #dc3545;
+}
 
