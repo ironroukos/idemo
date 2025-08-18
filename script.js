@@ -9,12 +9,11 @@ let rawData = [];
 // ==========================
 async function fetchData() {
   try {
-    // 🔹 Google Sheets JSON endpoint
     const url = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:json`;
     const res = await fetch(url);
     const text = await res.text();
 
-    // 🔹 Strip Google wrapper to get proper JSON
+    // Parse JSON wrapped by Google
     const json = JSON.parse(text.substring(47).slice(0, -2));
     const rows = json.table.rows;
 
@@ -29,8 +28,8 @@ async function fetchData() {
       profit: r.c[6]?.v
     }));
 
-    populateMonths();         // Generate month buttons with stats
-    renderParlays("all");     // Show all parlays initially
+    populateMonths();         // Month buttons with stats
+    renderParlays("all");     // Show all initially
   } catch (err) {
     console.error("Error fetching data", err);
   }
@@ -40,9 +39,7 @@ async function fetchData() {
 // 2️⃣ Generate month buttons with stats
 // ==========================
 function populateMonths() {
-  const monthMap = {}; // Stats per month
-
-  // Calculate Wins/Losses/Profit for each month
+  const monthMap = {};
   rawData.forEach(item => {
     if (!item.date) return;
     const month = new Date(item.date).toLocaleString('default', { month: 'long' });
@@ -57,7 +54,6 @@ function populateMonths() {
   const container = document.getElementById("monthButtons");
   container.innerHTML = "";
 
-  // Create buttons per month with stats
   Object.keys(monthMap).forEach(month => {
     const stats = monthMap[month];
     const btn = document.createElement("button");
@@ -66,11 +62,10 @@ function populateMonths() {
       <span style="margin-left:10px;">
         Wins: ${stats.wins} | 
         Losses: ${stats.losses} | 
-        Profit: <span style="color:${stats.profit >= 0 ? 'limegreen' : 'red'}">${stats.profit}</span>
+        Profit: <span style="color:${stats.profit>=0?'limegreen':'red'}">${stats.profit}</span>
       </span>
     `;
 
-    // Styling
     btn.style.margin = "5px";
     btn.style.padding = "10px 15px";
     btn.style.backgroundColor = "black";
@@ -80,12 +75,11 @@ function populateMonths() {
     btn.style.cursor = "pointer";
     btn.style.whiteSpace = "nowrap";
 
-    // Click → render only that month
     btn.addEventListener("click", () => renderParlays(month));
     container.appendChild(btn);
   });
 
-  // Optional "All" button
+  // All button
   const allBtn = document.createElement("button");
   allBtn.textContent = "All";
   allBtn.style.margin = "5px";
@@ -103,18 +97,14 @@ function populateMonths() {
 // 3️⃣ Render parlays for a month
 // ==========================
 function renderParlays(monthFilter = "all") {
-  // Filter data by month
   let filteredData = rawData;
   if (monthFilter !== "all") {
-    filteredData = rawData.filter(item => 
-      item.date && new Date(item.date).toLocaleString('default', { month: 'long' }) === monthFilter
-    );
+    filteredData = rawData.filter(item => item.date && new Date(item.date).toLocaleString('default', { month: 'long' }) === monthFilter);
   }
 
   const container = document.getElementById("parlaysContainer");
   container.innerHTML = "";
 
-  // Group by date → parlay odds
   const grouped = {};
   filteredData.forEach(item => {
     if (!item.date) return;
@@ -124,7 +114,8 @@ function renderParlays(monthFilter = "all") {
     grouped[date][item.parlayOdds].push(item);
   });
 
-  // Render grouped parlays
+  let totalWins = 0, totalLosses = 0, totalProfit = 0;
+
   Object.keys(grouped).sort().forEach(date => {
     const dateHeader = document.createElement("div");
     dateHeader.classList.add("parlay-date");
@@ -134,6 +125,9 @@ function renderParlays(monthFilter = "all") {
     Object.keys(grouped[date]).forEach(parlayOdds => {
       const parlay = grouped[date][parlayOdds];
       const result = (parlay[0].result || "").toLowerCase();
+      if (result === "win") totalWins++;
+      else totalLosses++;
+      totalProfit += Number(parlay[0].profit) || 0;
 
       const parlayDiv = document.createElement("div");
       parlayDiv.classList.add("parlay");
@@ -151,14 +145,20 @@ function renderParlays(monthFilter = "all") {
 
       container.appendChild(parlayDiv);
 
-      // Fade-in effect
       setTimeout(() => parlayDiv.classList.add("show"), 50);
     });
   });
+
+  // Update stats
+  document.getElementById("wins").textContent = `Wins: ${totalWins}`;
+  document.getElementById("losses").textContent = `Losses: ${totalLosses}`;
+  const profitEl = document.getElementById("profit");
+  profitEl.textContent = `Profit: ${totalProfit}`;
+  profitEl.style.color = totalProfit >= 0 ? "limegreen" : "red";
 }
 
 // ==========================
 // 4️⃣ Auto-refresh every 60s
 // ==========================
-fetchData();                  // initial load
-setInterval(fetchData, 60000); // refresh automatically
+fetchData();
+setInterval(fetchData, 60000);
