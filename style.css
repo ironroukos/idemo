@@ -1,50 +1,42 @@
 body {
-  margin: 0;
-  font-family: Arial, sans-serif;
   background-color: black;
   color: white;
+  font-family: 'Dancing Script', cursive;
+  padding: 20px;
 }
 
 h1 {
-  font-family: 'Dancing Script', cursive;
-  text-align: center;
   color: limegreen;
-  margin: 20px 0;
   font-size: 3em;
+  text-align: center;
+  margin-bottom: 20px;
 }
 
-button {
-  white-space: nowrap;
+#monthButtons button {
+  font-family: 'Dancing Script', cursive;
 }
 
 .parlay-date {
-  text-align: center;
   font-weight: bold;
-  font-size: 1.2em;
-  margin-top: 30px;      /* extra space before a new date */
-  margin-bottom: 10px;   /* space between date and first parlay */
-  border-bottom: 1px solid gray;  /* subtle line under date */
-  padding-bottom: 5px;
+  margin-top: 15px;
+  color: white;
 }
 
 .parlay {
-  border: 2px solid white;
-  border-radius: 10px;
-  padding: 15px;
-  margin: 15px auto;
-  max-width: 600px;
-  opacity: 0;
-  transform: translateY(10px);
-  transition: opacity 0.5s ease, transform 0.5s ease;
+  border: 2px solid;
+  padding: 10px;
+  margin: 10px 0;
+  display: none;
+  border-radius: 5px;
 }
 
 .parlay.show {
-  opacity: 1;
-  transform: translateY(0);
+  display: block;
+  transition: all 0.3s ease;
 }
 
 .parlay.won {
-  border-color: green;
+  border-color: limegreen;
 }
 
 .parlay.lost {
@@ -52,26 +44,16 @@ button {
 }
 
 .total-odds {
-  text-align: right;
   font-weight: bold;
-  margin-bottom: 10px;
+  margin-bottom: 5px;
 }
 
 .match {
   display: flex;
   justify-content: space-between;
-  padding: 5px 0;
-  border-top: 1px dashed gray;
 }
 
-.match:first-child {
-  border-top: none;
-}
-
-.win {
-  color: limegreen;
-}
-
-.loss {
-  color: red;
+#stats {
+  margin-bottom: 20px;
+  font-size: 1.2em;
 }
