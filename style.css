@@ -122,3 +122,23 @@ h1 {
     text-align: left;
   }
 }
+
+/* Headings: h1, season, month buttons */
+h1,
+.month-toggle-btn,
+.season-btn {
+  font-family: 'Dancing Script', cursive;
+}
+
+/* Match and parlay details: Use Arial */
+.parlay-date,
+.total-odds,
+.parlay .match {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 1.3rem;
+}
+
+/* Optional: Make .parlay .match a little smaller for odds/details */
+.parlay .match {
+  font-size: 1.15rem;
+}
