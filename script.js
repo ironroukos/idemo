@@ -32,7 +32,6 @@ function renderParlays(bets) {
   const parlaysDiv = document.getElementById("parlays");
   parlaysDiv.innerHTML = "";
 
-  // 🔑 Ομαδοποιούμε με βάση ημερομηνία + συνολική απόδοση
   const groups = {};
   bets.forEach(b => {
     const key = `${b.date}_${b.parlayOdds}`;
@@ -48,12 +47,6 @@ function renderParlays(bets) {
 
     const parlayDiv = document.createElement("div");
     parlayDiv.classList.add("parlay");
-
-    if (result === "Profit") {
-      parlayDiv.classList.add("profit");
-    } else if (result === "Loss") {
-      parlayDiv.classList.add("loss");
-    }
 
     parlayDiv.innerHTML = `
       <h3>${date} | Απόδοση: <span class="odds">${totalOdds}</span></h3>
@@ -75,11 +68,9 @@ function renderParlays(bets) {
 function renderSummary(bets) {
   const summaryDiv = document.getElementById("summary");
 
-  // Παίρνουμε μοναδικά κλειδιά (date + parlayOdds)
   const keys = [...new Set(bets.map(b => `${b.date}_${b.parlayOdds}`))];
   const totalParlays = keys.length;
 
-  // Υπολογισμός αποτελεσμάτων ανά parlay
   const resultsByKey = {};
   keys.forEach(k => {
     const group = bets.filter(b => `${b.date}_${b.parlayOdds}` === k);
@@ -103,3 +94,5 @@ function renderSummary(bets) {
 
 loadBets();
 
+// 🔄 Αυτόματο refresh κάθε 60 δευτερόλεπτα
+setInterval(loadBets, 60000);
