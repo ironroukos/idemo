@@ -57,26 +57,56 @@ h1 {
   margin-bottom: 20px;
   font-size: 1.2em;
 }
-.month-toggle-btn {
+
+/* --- Classic Month/Season Button Styles --- */
+.month-toggle-btn, .season-btn {
+  font-family: 'Dancing Script', cursive;
+  font-size: 2.2rem;
+  background: transparent;
+  color: white;
+  border: 2px solid limegreen;
+  border-radius: 12px;
+  cursor: pointer;
+  padding: 8px 16px;
+  margin: 20px auto 10px auto;
+  width: 95%;
+  max-width: 500px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  text-align: left;
+  box-sizing: border-box;
   transition: background 0.2s, border 0.2s;
 }
+
 .month-toggle-btn:hover {
-  background-color: #222;
+  background: rgba(0,255,0,0.05);
   border-color: #55ff55;
 }
+
+.month-name {
+  flex: 1;
+  text-align: left;
+}
+
+.month-stats {
+  flex: 1;
+  text-align: right;
+  font-size: 1.2rem;
+  margin-left: 12px;
+}
+
+.season-btn {
+  pointer-events: none;
+  opacity: 1;
+}
+
 .parlays-dropdown {
   background: #111;
   border-left: 2px solid limegreen;
   border-radius: 0 0 7px 7px;
   padding: 10px 10px 15px 15px;
-}
-
-.season-btn,
-.month-toggle-btn,
-.parlays-dropdown {
-  max-width: 600px;
-  margin-left: auto;
-  margin-right: auto;
 }
 
 /* Center everything only for screens wider than 800px (laptop/desktop) */
@@ -86,25 +116,9 @@ h1 {
     flex-direction: column;
     align-items: center;
   }
-  .month-toggle-btn, .season-btn {
-  font-family: 'Dancing Script', cursive; /* keep font style */
-  background-color: black;
-  color: white;
-  border: 2px solid limegreen;
-  border-radius: 5px;
-  cursor: pointer;
-  padding: 10px 15px;
-  margin: 10px 0;
-  width: 100%;
-  text-align: left;
-  font-size: 1.2em;
-  transition: background 0.2s, border 0.2s;
-  display: block;
+  .month-toggle-btn, .season-btn, .parlays-dropdown {
+    max-width: 600px;
+    min-width: 320px;
+    text-align: left;
+  }
 }
-
-.month-toggle-btn:hover {
-  background-color: #222;
-  border-color: #55ff55;
-}
-
-.season-btn {
