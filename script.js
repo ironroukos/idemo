@@ -40,71 +40,13 @@ async function fetchData() {
       r.date && r.match && r.prediction && r.odds
     );
 
-   function populateSeasonAndMonths() {
-  // ...parlay grouping code above...
-
-  const container = document.getElementById("monthButtons");
-  container.innerHTML = "";
-
-  // 1️⃣ Season Button
-  const seasonBtn = document.createElement("button");
-  seasonBtn.className = "month-toggle-btn season-btn";
-  seasonBtn.innerHTML = `
-    <span class="month-name">Season 2025-2026</span>
-    <span class="month-stats">
-      Wins: ${seasonStats.wins} | 
-      Losses: ${seasonStats.losses} | 
-      Profit: <span style="color:${seasonStats.profit>=0?'limegreen':'red'}">${seasonStats.profit}</span>
-    </span>
-  `;
-  seasonBtn.disabled = true;
-  seasonBtn.style.pointerEvents = "none";
-  container.appendChild(seasonBtn);
-
-  // 2️⃣ Month Buttons
-  Object.keys(parlaysByMonth).forEach(month => {
-    // Calculate stats for the month
-    let monthParlays = {};
-    Object.values(parlaysByMonth[month]).forEach(dateGroup => {
-      Object.values(dateGroup).forEach(parlayArr => {
-        const key = parlayArr[0].date + "_" + parlayArr[0].parlayOdds;
-        monthParlays[key] = parlayArr;
-      });
-    });
-    const stats = getParlayStats(monthParlays);
-
-    const btn = document.createElement("button");
-    btn.className = "month-toggle-btn";
-    btn.innerHTML = `
-      <span class="month-name">${month}</span>
-      <span class="month-stats">
-        Wins: ${stats.wins} | 
-        Losses: ${stats.losses} | 
-        Profit: <span style="color:${stats.profit>=0?'limegreen':'red'}">${stats.profit}</span>
-      </span>
-    `;
-
-    // Parlay dropdown logic
-    const parlaysContainer = document.createElement("div");
-    parlaysContainer.className = "parlays-dropdown";
-    parlaysContainer.style.display = "none";
-    parlaysContainer.style.marginTop = "5px";
-    renderParlaysForMonth(parlaysByMonth[month], parlaysContainer);
-
-    btn.addEventListener("click", () => {
-      document.querySelectorAll('.parlays-dropdown').forEach(el => {
-        if (el !== parlaysContainer) el.style.display = "none";
-      });
-      parlaysContainer.style.display = parlaysContainer.style.display === "none" ? "block" : "none";
-    });
-
-    container.appendChild(btn);
-    container.appendChild(parlaysContainer);
-  });
-} 
+    populateSeasonAndMonths();
+  } catch (err) {
+    console.error("Error fetching data", err);
+  }
+}
 
 function getParlayStats(parlays) {
-  // Each parlay group = one win/loss (parlay[0].result), sum profit
   let wins = 0, losses = 0, profit = 0;
   Object.values(parlays).forEach(parlay => {
     const result = (parlay[0].result || "").toLowerCase();
@@ -116,7 +58,6 @@ function getParlayStats(parlays) {
 }
 
 function populateSeasonAndMonths() {
-  const monthMap = {};
   const parlaysByMonth = {};
 
   // Group data by month, date, and parlayOdds
@@ -147,9 +88,9 @@ function populateSeasonAndMonths() {
   const container = document.getElementById("monthButtons");
   container.innerHTML = "";
 
-  // Add non-clickable season button
-  const seasonBtn = document.createElement("div");
-  seasonBtn.className = "season-btn";
+  // 1️⃣ Season Button (classic style, not clickable)
+  const seasonBtn = document.createElement("button");
+  seasonBtn.className = "month-toggle-btn season-btn";
   seasonBtn.innerHTML = `
     <span class="month-name">Season 2025-2026</span>
     <span class="month-stats">
@@ -157,13 +98,13 @@ function populateSeasonAndMonths() {
       Losses: ${seasonStats.losses} | 
       Profit: <span style="color:${seasonStats.profit>=0?'limegreen':'red'}">${seasonStats.profit}</span>
     </span>
-    <span style="clear:both"></span>
   `;
+  seasonBtn.disabled = true;
+  seasonBtn.style.pointerEvents = "none";
   container.appendChild(seasonBtn);
 
-  // Add each month as a button with its own dropdown
+  // 2️⃣ Month Buttons (classic style, clickable)
   Object.keys(parlaysByMonth).forEach(month => {
-    // Flatten month parlays
     let monthParlays = {};
     Object.values(parlaysByMonth[month]).forEach(dateGroup => {
       Object.values(dateGroup).forEach(parlayArr => {
@@ -173,7 +114,6 @@ function populateSeasonAndMonths() {
     });
     const stats = getParlayStats(monthParlays);
 
-    // Month button
     const btn = document.createElement("button");
     btn.className = "month-toggle-btn";
     btn.innerHTML = `
@@ -183,23 +123,16 @@ function populateSeasonAndMonths() {
         Losses: ${stats.losses} | 
         Profit: <span style="color:${stats.profit>=0?'limegreen':'red'}">${stats.profit}</span>
       </span>
-      <span style="clear:both"></span>
     `;
-    btn.style.margin = "10px 0";
-    btn.style.width = "100%";
 
-    // Parlay cards container (hidden by default)
+    // Parlay dropdown logic
     const parlaysContainer = document.createElement("div");
     parlaysContainer.className = "parlays-dropdown";
     parlaysContainer.style.display = "none";
     parlaysContainer.style.marginTop = "5px";
-
-    // Fill in parlay cards for this month
     renderParlaysForMonth(parlaysByMonth[month], parlaysContainer);
 
-    // Toggle dropdown
     btn.addEventListener("click", () => {
-      // Optional: close other dropdowns
       document.querySelectorAll('.parlays-dropdown').forEach(el => {
         if (el !== parlaysContainer) el.style.display = "none";
       });
