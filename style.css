@@ -1,69 +1,75 @@
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&display=swap');
+
 body {
   font-family: Arial, sans-serif;
   background: #f8f9fa;
-  padding: 20px;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Κέντρο οριζόντια */
 }
 
-h1 {
-  text-align: center;
-  color: #333;
-  font-family: 'Dancing Script', cursive; /* Καλλιγραφική */
-  font-size: 3rem;
-  margin-bottom: 30px;
-}
-
-.tracker {
-  max-width: 1000px;
-  margin: auto;
-}
-
-button {
-  margin-bottom: 20px;
-  padding: 10px 15px;
-  border: none;
-  border-radius: 8px;
-  background: #007bff;
+header {
+  background: #343a40;
   color: white;
-  cursor: pointer;
+  padding: 20px;
+  text-align: center;
+  width: 100%;
 }
 
-.summary {
-  background: #fff3cd;
-  border-left: 6px solid #ffc107;
-  padding: 15px;
-  margin-bottom: 20px;
-  border-radius: 10px;
-  font-weight: bold;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+header h1 {
+  font-family: 'Dancing Script', cursive;
+  font-size: 2.5rem;
+  margin: 0;
+}
+
+#summary {
+  background: white;
+  margin: 20px auto;
+  padding: 15px 25px;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  font-size: 1rem;
+  text-align: center; /* Κεντραρισμένο */
+}
+
+#parlays {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Όλα στο κέντρο */
+  width: 100%;
+  max-width: 900px; /* Όριο πλάτους */
+  padding: 10px;
 }
 
 .parlay {
-  margin-bottom: 20px;
-  padding: 15px;
-  border-radius: 12px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-  transition: 0.3s ease;
+  background: white;
+  padding: 20px;
+  margin: 15px 0;
+  border-radius: 14px;
+  box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+  width: 100%;
+  text-align: center; /* Τα περιεχόμενα στο κέντρο */
 }
 
 .parlay h3 {
-  margin: 0 0 10px;
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #333;
 }
 
 .bets {
-  margin-left: 15px;
+  margin: 10px 0;
 }
 
 .bet {
-  padding: 5px 0;
-  border-bottom: 1px solid #eee;
-}
-
-.bet:last-child {
-  border-bottom: none;
+  margin: 6px 0;
 }
 
 .odds {
   font-weight: bold;
+  color: #007bff;
 }
 
 .profit {
@@ -74,15 +80,4 @@ button {
 .loss {
   color: red;
   font-weight: bold;
-}
-
-/* 🔥 Background ανά αποτέλεσμα */
-.parlay.profit {
-  background: #d4edda;
-  border-left: 6px solid #28a745;
-}
-
-.parlay.loss {
-  background: #f8d7da;
-  border-left: 6px solid #dc3545;
 }
