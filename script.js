@@ -4,6 +4,15 @@ const sheetID = "1hqgI3ZtPxQfSTA9y5w3jBmedTZP7sqlMGIVqm4mqZB8";
 // 🔹 Array to store all data from the sheet
 let rawData = [];
 
+// Helper to parse "DD/MM" to a valid JS Date object (uses 2025 as year, update as needed)
+function parseDate(ddmm) {
+  if (!ddmm) return null;
+  const [day, month] = ddmm.split('/');
+  if (!day || !month) return null;
+  // Use current year or allow setting in spreadsheet
+  return new Date(`2025-${month.padStart(2, '0')}-${day.padStart(2, '0')}`);
+}
+
 // ==========================
 // 1️⃣ Fetch data from Google Sheets
 // ==========================
@@ -26,7 +35,9 @@ async function fetchData() {
       parlayOdds: r.c[4]?.v,
       result: r.c[5]?.v,
       profit: r.c[6]?.v
-    }));
+    })).filter(r =>
+      r.date && r.match && r.prediction && r.odds // skip empty/invalid rows
+    );
 
     populateMonths();         // Month buttons with stats
     renderParlays("all");     // Show all initially
@@ -41,12 +52,13 @@ async function fetchData() {
 function populateMonths() {
   const monthMap = {};
   rawData.forEach(item => {
-    if (!item.date) return;
-    const month = new Date(item.date).toLocaleString('default', { month: 'long' });
+    const jsDate = parseDate(item.date);
+    if (!jsDate) return;
+    const month = jsDate.toLocaleString('default', { month: 'long' });
     if (!monthMap[month]) monthMap[month] = { wins: 0, losses: 0, profit: 0 };
 
-    if ((item.result || "").toLowerCase() === "win") monthMap[month].wins++;
-    else monthMap[month].losses++;
+    if ((item.result || "").toLowerCase() === "profit") monthMap[month].wins++;
+    else if ((item.result || "").toLowerCase() === "loss") monthMap[month].losses++;
 
     monthMap[month].profit += Number(item.profit) || 0;
   });
@@ -99,7 +111,10 @@ function populateMonths() {
 function renderParlays(monthFilter = "all") {
   let filteredData = rawData;
   if (monthFilter !== "all") {
-    filteredData = rawData.filter(item => item.date && new Date(item.date).toLocaleString('default', { month: 'long' }) === monthFilter);
+    filteredData = rawData.filter(item => {
+      const jsDate = parseDate(item.date);
+      return jsDate && jsDate.toLocaleString('default', { month: 'long' }) === monthFilter;
+    });
   }
 
   const container = document.getElementById("parlaysContainer");
@@ -117,24 +132,28 @@ function renderParlays(monthFilter = "all") {
   let totalWins = 0, totalLosses = 0, totalProfit = 0;
 
   Object.keys(grouped).sort().forEach(date => {
+    const jsDate = parseDate(date);
     const dateHeader = document.createElement("div");
     dateHeader.classList.add("parlay-date");
-    dateHeader.textContent = date;
+    dateHeader.textContent = jsDate ? jsDate.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit' }) : "Invalid Date";
     container.appendChild(dateHeader);
 
     Object.keys(grouped[date]).forEach(parlayOdds => {
       const parlay = grouped[date][parlayOdds];
       const result = (parlay[0].result || "").toLowerCase();
-      if (result === "win") totalWins++;
-      else totalLosses++;
+      if (result === "profit") totalWins++;
+      else if (result === "loss") totalLosses++;
       totalProfit += Number(parlay[0].profit) || 0;
+
+      // Skip rendering "parlay" with no match/prediction/odds
+      if (!parlay[0].match || !parlay[0].prediction || !parlay[0].odds) return;
 
       const parlayDiv = document.createElement("div");
       parlayDiv.classList.add("parlay");
-      parlayDiv.classList.add(result === "win" ? "won" : "lost");
+      parlayDiv.classList.add(result === "profit" ? "won" : "lost");
 
       parlayDiv.innerHTML = `
-        <div class="total-odds">Total Odds: ${parlayOdds}</div>
+        <div class="total-odds">Total Odds: ${parlayOdds || "N/A"}</div>
         ${parlay.map(m => `
           <div class="match">
             <span>${m.match} (${m.prediction})</span>
