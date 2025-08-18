@@ -13,42 +13,8 @@ h1 {
   font-size: 3em;
 }
 
-#monthSelect {
-  display: block;
-  margin: 20px auto;
-  padding: 10px;
-  font-size: 1em;
-  background-color: black;
-  color: white;
-  border: 2px solid limegreen;
-  border-radius: 5px;
-}
-
-#stats {
-  text-align: center;
-  margin: 20px 0;
-  font-size: 1.2em;
-}
-
-#stats span {
-  margin: 0 10px;
-  font-weight: bold;
-}
-
-.parlay {
-  border: 2px solid white;
-  border-radius: 10px;
-  padding: 15px;
-  margin: 15px auto;
-  max-width: 600px;
-}
-
-.parlay.won {
-  border-color: green;
-}
-
-.parlay.lost {
-  border-color: red;
+button {
+  white-space: nowrap;
 }
 
 .parlay-date {
@@ -59,6 +25,30 @@ h1 {
   margin-bottom: 10px;   /* space between date and first parlay */
   border-bottom: 1px solid gray;  /* subtle line under date */
   padding-bottom: 5px;
+}
+
+.parlay {
+  border: 2px solid white;
+  border-radius: 10px;
+  padding: 15px;
+  margin: 15px auto;
+  max-width: 600px;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.parlay.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.parlay.won {
+  border-color: green;
+}
+
+.parlay.lost {
+  border-color: red;
 }
 
 .total-odds {
