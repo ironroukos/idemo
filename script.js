@@ -4,29 +4,21 @@ const sheetID = "1hqgI3ZtPxQfSTA9y5w3jBmedTZP7sqlMGIVqm4mqZB8";
 // 🔹 Array to store all data from the sheet
 let rawData = [];
 
-// Helper to parse "DD/MM" to a valid JS Date object (uses 2025 as year, update as needed)
 function parseDate(ddmm) {
   if (!ddmm) return null;
   const [day, month] = ddmm.split('/');
   if (!day || !month) return null;
-  // Use current year or allow setting in spreadsheet
   return new Date(`2025-${month.padStart(2, '0')}-${day.padStart(2, '0')}`);
 }
 
-// ==========================
-// 1️⃣ Fetch data from Google Sheets
-// ==========================
 async function fetchData() {
   try {
     const url = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:json`;
     const res = await fetch(url);
     const text = await res.text();
-
-    // Parse JSON wrapped by Google
     const json = JSON.parse(text.substring(47).slice(0, -2));
     const rows = json.table.rows;
 
-    // Map rows to structured objects, filling merged cells
     let lastNonEmpty = {
       date: null, match: null, prediction: null, odds: null, parlayOdds: null, result: null, profit: null
     };
@@ -40,56 +32,96 @@ async function fetchData() {
         result: r.c[5]?.v ?? lastNonEmpty.result,
         profit: r.c[6]?.v ?? lastNonEmpty.profit
       };
-      // Update lastNonEmpty if values are present
       Object.keys(obj).forEach(k => {
         if (obj[k] !== null && obj[k] !== undefined) lastNonEmpty[k] = obj[k];
       });
       return obj;
     }).filter(r =>
-      r.date && r.match && r.prediction && r.odds // skip empty/invalid rows
+      r.date && r.match && r.prediction && r.odds
     );
 
-    populateMonths();         // Month buttons with stats & dropdowns
+    populateSeasonAndMonths();
   } catch (err) {
     console.error("Error fetching data", err);
   }
 }
 
-// ==========================
-// 2️⃣ Generate month buttons with stats & dropdown functionality
-// ==========================
-function populateMonths() {
+function getParlayStats(parlays) {
+  // Each parlay group = one win/loss (parlay[0].result), sum profit
+  let wins = 0, losses = 0, profit = 0;
+  Object.values(parlays).forEach(parlay => {
+    const result = (parlay[0].result || "").toLowerCase();
+    if (result === "profit") wins++;
+    else if (result === "loss") losses++;
+    profit += Number(parlay[0].profit) || 0;
+  });
+  return { wins, losses, profit };
+}
+
+function populateSeasonAndMonths() {
   const monthMap = {};
   const parlaysByMonth = {};
 
+  // Group data by month, date, and parlayOdds
   rawData.forEach(item => {
     const jsDate = parseDate(item.date);
     if (!jsDate) return;
     const month = jsDate.toLocaleString('default', { month: 'long' });
 
-    // Stats
-    if (!monthMap[month]) monthMap[month] = { wins: 0, losses: 0, profit: 0 };
-    if ((item.result || "").toLowerCase() === "profit") monthMap[month].wins++;
-    else if ((item.result || "").toLowerCase() === "loss") monthMap[month].losses++;
-    monthMap[month].profit += Number(item.profit) || 0;
-
-    // Group parlays by month
-    if (!parlaysByMonth[month]) parlaysByMonth[month] = [];
-    parlaysByMonth[month].push(item);
+    if (!parlaysByMonth[month]) parlaysByMonth[month] = {};
+    if (!parlaysByMonth[month][item.date]) parlaysByMonth[month][item.date] = {};
+    if (!parlaysByMonth[month][item.date][item.parlayOdds]) parlaysByMonth[month][item.date][item.parlayOdds] = [];
+    parlaysByMonth[month][item.date][item.parlayOdds].push(item);
   });
 
+  // Compute overall season stats (all months, all parlays)
+  let allParlays = {};
+  Object.values(parlaysByMonth).forEach(monthGroup => {
+    Object.values(monthGroup).forEach(dateGroup => {
+      Object.values(dateGroup).forEach(parlayArr => {
+        const key = parlayArr[0].date + "_" + parlayArr[0].parlayOdds;
+        allParlays[key] = parlayArr;
+      });
+    });
+  });
+  const seasonStats = getParlayStats(allParlays);
+
+  // Clear container
   const container = document.getElementById("monthButtons");
   container.innerHTML = "";
 
-  Object.keys(monthMap).forEach(month => {
-    const stats = monthMap[month];
+  // Add non-clickable season button
+  const seasonBtn = document.createElement("div");
+  seasonBtn.className = "season-btn";
+  seasonBtn.innerHTML = `
+    <span class="month-name">Season 2025-2026</span>
+    <span class="month-stats">
+      Wins: ${seasonStats.wins} | 
+      Losses: ${seasonStats.losses} | 
+      Profit: <span style="color:${seasonStats.profit>=0?'limegreen':'red'}">${seasonStats.profit}</span>
+    </span>
+    <span style="clear:both"></span>
+  `;
+  container.appendChild(seasonBtn);
+
+  // Add each month as a button with its own dropdown
+  Object.keys(parlaysByMonth).forEach(month => {
+    // Flatten month parlays
+    let monthParlays = {};
+    Object.values(parlaysByMonth[month]).forEach(dateGroup => {
+      Object.values(dateGroup).forEach(parlayArr => {
+        const key = parlayArr[0].date + "_" + parlayArr[0].parlayOdds;
+        monthParlays[key] = parlayArr;
+      });
+    });
+    const stats = getParlayStats(monthParlays);
 
     // Month button
     const btn = document.createElement("button");
     btn.className = "month-toggle-btn";
     btn.innerHTML = `
-      <span class="month-name" style="float:left;">${month}</span>
-      <span class="month-stats" style="float:right;">
+      <span class="month-name">${month}</span>
+      <span class="month-stats">
         Wins: ${stats.wins} | 
         Losses: ${stats.losses} | 
         Profit: <span style="color:${stats.profit>=0?'limegreen':'red'}">${stats.profit}</span>
@@ -98,16 +130,6 @@ function populateMonths() {
     `;
     btn.style.margin = "10px 0";
     btn.style.width = "100%";
-    btn.style.backgroundColor = "black";
-    btn.style.color = "white";
-    btn.style.border = "2px solid limegreen";
-    btn.style.borderRadius = "5px";
-    btn.style.cursor = "pointer";
-    btn.style.whiteSpace = "nowrap";
-    btn.style.textAlign = "left";
-    btn.style.position = "relative";
-    btn.style.fontSize = "1.2em";
-    btn.style.padding = "10px 15px";
 
     // Parlay cards container (hidden by default)
     const parlaysContainer = document.createElement("div");
@@ -132,40 +154,24 @@ function populateMonths() {
   });
 }
 
-// ==========================
-// 3️⃣ Render parlays for a month (dropdown)
-// ==========================
 function renderParlaysForMonth(monthData, container) {
-  // Group by date and parlayOdds
-  const grouped = {};
-  monthData.forEach(item => {
-    if (!item.date) return;
-    const date = item.date;
-    if (!grouped[date]) grouped[date] = {};
-    if (!grouped[date][item.parlayOdds]) grouped[date][item.parlayOdds] = [];
-    grouped[date][item.parlayOdds].push(item);
-  });
-
-  Object.keys(grouped).sort().forEach(date => {
-    // Only render if there are valid matches in this date group
-    const hasValidMatches = Object.values(grouped[date]).some(parlay =>
-      parlay.some(m => m.match && m.prediction && m.odds)
-    );
-    if (!hasValidMatches) return;
-
-    const jsDate = parseDate(date);
-    const dateHeader = document.createElement("div");
-    dateHeader.classList.add("parlay-date");
-    dateHeader.textContent = jsDate ? jsDate.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit' }) : "Invalid Date";
-    container.appendChild(dateHeader);
-
-    Object.keys(grouped[date]).forEach(parlayOdds => {
-      const parlay = grouped[date][parlayOdds];
+  Object.keys(monthData).sort().forEach(date => {
+    const dateGroup = monthData[date];
+    Object.keys(dateGroup).forEach(parlayOdds => {
+      const parlay = dateGroup[parlayOdds];
       const result = (parlay[0].result || "").toLowerCase();
+      const jsDate = parseDate(parlay[0].date);
 
-      // Skip rendering "parlay" with no match/prediction/odds
+      // Only render if there are valid matches in this parlay
       if (!parlay[0].match || !parlay[0].prediction || !parlay[0].odds) return;
 
+      // Date header
+      const dateHeader = document.createElement("div");
+      dateHeader.classList.add("parlay-date");
+      dateHeader.textContent = jsDate ? jsDate.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit' }) : "Invalid Date";
+      container.appendChild(dateHeader);
+
+      // Parlay card
       const parlayDiv = document.createElement("div");
       parlayDiv.classList.add("parlay");
       parlayDiv.classList.add(result === "profit" ? "won" : "lost");
@@ -188,7 +194,7 @@ function renderParlaysForMonth(monthData, container) {
 }
 
 // ==========================
-// 4️⃣ Auto-refresh every 60s
+// 5️⃣ Auto-refresh every 60s
 // ==========================
 fetchData();
 setInterval(fetchData, 60000);
