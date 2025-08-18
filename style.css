@@ -7,7 +7,7 @@ body {
 h1 {
   text-align: center;
   color: #333;
-  font-family: 'Dancing Script', cursive; /* 🔹 Καλλιγραφική */
+  font-family: 'Dancing Script', cursive; /* Καλλιγραφική */
   font-size: 3rem;
   margin-bottom: 30px;
 }
@@ -76,7 +76,7 @@ button {
   font-weight: bold;
 }
 
-/* 🔥 Background για το συνολικό κουτί */
+/* 🔥 Background ανά αποτέλεσμα */
 .parlay.profit {
   background: #d4edda;
   border-left: 6px solid #28a745;
@@ -86,4 +86,3 @@ button {
   background: #f8d7da;
   border-left: 6px solid #dc3545;
 }
-
