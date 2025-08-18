@@ -57,3 +57,16 @@ h1 {
   margin-bottom: 20px;
   font-size: 1.2em;
 }
+.month-toggle-btn {
+  transition: background 0.2s, border 0.2s;
+}
+.month-toggle-btn:hover {
+  background-color: #222;
+  border-color: #55ff55;
+}
+.parlays-dropdown {
+  background: #111;
+  border-left: 2px solid limegreen;
+  border-radius: 0 0 7px 7px;
+  padding: 10px 10px 15px 15px;
+}
