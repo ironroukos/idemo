@@ -86,8 +86,8 @@ h1,
     align-items: center;
   }
   .month-toggle-btn, .season-btn, .parlays-dropdown {
-    max-width: 700px;
-    min-width: 380px;
+    max-width: 100%;
+    min-width: unset;
     text-align: left;
   }
 }
