@@ -59,17 +59,22 @@ function getParlayStats(parlays) {
 
 function populateSeasonAndMonths() {
   const parlaysByMonth = {};
+  const monthDates = {};
 
   // Group data by month, date, and parlayOdds
   rawData.forEach(item => {
     const jsDate = parseDate(item.date);
     if (!jsDate) return;
     const month = jsDate.toLocaleString('default', { month: 'long' });
-
     if (!parlaysByMonth[month]) parlaysByMonth[month] = {};
     if (!parlaysByMonth[month][item.date]) parlaysByMonth[month][item.date] = {};
     if (!parlaysByMonth[month][item.date][item.parlayOdds]) parlaysByMonth[month][item.date][item.parlayOdds] = [];
     parlaysByMonth[month][item.date][item.parlayOdds].push(item);
+
+    // Store first date for month sorting
+    if (!monthDates[month] || jsDate > monthDates[month]) {
+      monthDates[month] = jsDate;
+    }
   });
 
   // Compute overall season stats (all months, all parlays)
@@ -92,7 +97,7 @@ function populateSeasonAndMonths() {
   const seasonBtn = document.createElement("button");
   seasonBtn.className = "month-toggle-btn season-btn";
   seasonBtn.innerHTML = `
-    <span class="month-name">Season 2025-2026</span>
+    <span class="month-name">Season<br>2025–<br>2026</span>
     <span class="month-stats">
       Wins: ${seasonStats.wins} | 
       Losses: ${seasonStats.losses} | 
@@ -103,84 +108,94 @@ function populateSeasonAndMonths() {
   seasonBtn.style.pointerEvents = "none";
   container.appendChild(seasonBtn);
 
-  // 2️⃣ Month Buttons (classic style, clickable)
-  Object.keys(parlaysByMonth).forEach(month => {
-    let monthParlays = {};
-    Object.values(parlaysByMonth[month]).forEach(dateGroup => {
-      Object.values(dateGroup).forEach(parlayArr => {
-        const key = parlayArr[0].date + "_" + parlayArr[0].parlayOdds;
-        monthParlays[key] = parlayArr;
+  // 2️⃣ Month Buttons (reverse chronological order)
+  Object.keys(parlaysByMonth)
+    .sort((a, b) => monthDates[b] - monthDates[a]) // Newest month first
+    .forEach(month => {
+      let monthParlays = {};
+      Object.values(parlaysByMonth[month]).forEach(dateGroup => {
+        Object.values(dateGroup).forEach(parlayArr => {
+          const key = parlayArr[0].date + "_" + parlayArr[0].parlayOdds;
+          monthParlays[key] = parlayArr;
+        });
       });
-    });
-    const stats = getParlayStats(monthParlays);
+      const stats = getParlayStats(monthParlays);
 
-    const btn = document.createElement("button");
-    btn.className = "month-toggle-btn";
-    btn.innerHTML = `
-      <span class="month-name">${month}</span>
-      <span class="month-stats">
-        Wins: ${stats.wins} | 
-        Losses: ${stats.losses} | 
-        Profit: <span style="color:${stats.profit>=0?'limegreen':'red'}">${stats.profit}</span>
-      </span>
-    `;
-
-    // Parlay dropdown logic
-    const parlaysContainer = document.createElement("div");
-    parlaysContainer.className = "parlays-dropdown";
-    parlaysContainer.style.display = "none";
-    parlaysContainer.style.marginTop = "5px";
-    renderParlaysForMonth(parlaysByMonth[month], parlaysContainer);
-
-    btn.addEventListener("click", () => {
-      document.querySelectorAll('.parlays-dropdown').forEach(el => {
-        if (el !== parlaysContainer) el.style.display = "none";
-      });
-      parlaysContainer.style.display = parlaysContainer.style.display === "none" ? "block" : "none";
-    });
-
-    container.appendChild(btn);
-    container.appendChild(parlaysContainer);
-  });
-}
-
-function renderParlaysForMonth(monthData, container) {
-  Object.keys(monthData).sort().forEach(date => {
-    const dateGroup = monthData[date];
-    Object.keys(dateGroup).forEach(parlayOdds => {
-      const parlay = dateGroup[parlayOdds];
-      const result = (parlay[0].result || "").toLowerCase();
-      const jsDate = parseDate(parlay[0].date);
-
-      // Only render if there are valid matches in this parlay
-      if (!parlay[0].match || !parlay[0].prediction || !parlay[0].odds) return;
-
-      // Date header
-      const dateHeader = document.createElement("div");
-      dateHeader.classList.add("parlay-date");
-      dateHeader.textContent = jsDate ? jsDate.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit' }) : "Invalid Date";
-      container.appendChild(dateHeader);
-
-      // Parlay card
-      const parlayDiv = document.createElement("div");
-      parlayDiv.classList.add("parlay");
-      parlayDiv.classList.add(result === "profit" ? "won" : "lost");
-
-      parlayDiv.innerHTML = `
-        <div class="total-odds">Total Odds: ${parlayOdds || "N/A"}</div>
-        ${parlay.map(m => `
-          <div class="match">
-            <span>${m.match} (${m.prediction})</span>
-            <span>${m.odds}</span>
-          </div>
-        `).join('')}
+      const btn = document.createElement("button");
+      btn.className = "month-toggle-btn";
+      btn.innerHTML = `
+        <span class="month-name">${month}</span>
+        <span class="month-stats">
+          Wins: ${stats.wins} | 
+          Losses: ${stats.losses} | 
+          Profit: <span style="color:${stats.profit>=0?'limegreen':'red'}">${stats.profit}</span>
+        </span>
       `;
 
-      container.appendChild(parlayDiv);
+      // Parlay dropdown logic
+      const parlaysContainer = document.createElement("div");
+      parlaysContainer.className = "parlays-dropdown";
+      parlaysContainer.style.display = "none";
+      parlaysContainer.style.marginTop = "5px";
+      renderParlaysForMonth(parlaysByMonth[month], parlaysContainer);
 
-      setTimeout(() => parlayDiv.classList.add("show"), 50);
+      btn.addEventListener("click", () => {
+        document.querySelectorAll('.parlays-dropdown').forEach(el => {
+          if (el !== parlaysContainer) el.style.display = "none";
+        });
+        parlaysContainer.style.display = parlaysContainer.style.display === "none" ? "block" : "none";
+      });
+
+      container.appendChild(btn);
+      container.appendChild(parlaysContainer);
     });
-  });
+}
+
+// --- Parlay cards: reverse chronological order ---
+function renderParlaysForMonth(monthData, container) {
+  Object.keys(monthData)
+    .sort((a, b) => {
+      // Reverse chronological: newest first
+      const dateA = parseDate(a);
+      const dateB = parseDate(b);
+      return dateB - dateA;
+    })
+    .forEach(date => {
+      const dateGroup = monthData[date];
+      Object.keys(dateGroup).forEach(parlayOdds => {
+        const parlay = dateGroup[parlayOdds];
+        const result = (parlay[0].result || "").toLowerCase();
+        const jsDate = parseDate(parlay[0].date);
+
+        // Only render if there are valid matches in this parlay
+        if (!parlay[0].match || !parlay[0].prediction || !parlay[0].odds) return;
+
+        // Date header
+        const dateHeader = document.createElement("div");
+        dateHeader.classList.add("parlay-date");
+        dateHeader.textContent = jsDate ? jsDate.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit' }) : "Invalid Date";
+        container.appendChild(dateHeader);
+
+        // Parlay card
+        const parlayDiv = document.createElement("div");
+        parlayDiv.classList.add("parlay");
+        parlayDiv.classList.add(result === "profit" ? "won" : "lost");
+
+        parlayDiv.innerHTML = `
+          <div class="total-odds">Total Odds: ${parlayOdds || "N/A"}</div>
+          ${parlay.map(m => `
+            <div class="match">
+              <span>${m.match} (${m.prediction})</span>
+              <span>${m.odds}</span>
+            </div>
+          `).join('')}
+        `;
+
+        container.appendChild(parlayDiv);
+
+        setTimeout(() => parlayDiv.classList.add("show"), 50);
+      });
+    });
 }
 
 // ==========================
