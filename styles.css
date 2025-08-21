@@ -25,13 +25,12 @@ h1,
   background: transparent;
   color: white;
   border: 2px solid limegreen;
-  border-radius: 20px; /* Enlarged */
+  border-radius: 12px;
   cursor: pointer;
-  padding: 24px 32px; /* Enlarged */
-  margin: 28px auto 16px auto; /* More vertical space */
-  width: 97%;
-  max-width: 700px; /* Wider frame for content */
-  min-width: 340px;
+  padding: 8px 16px;
+  margin: 20px auto 10px auto;
+  width: 95%;
+  max-width: 500px;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -39,7 +38,6 @@ h1,
   text-align: left;
   box-sizing: border-box;
   transition: background 0.2s, border 0.2s;
-  flex-wrap: wrap; /* If too small, wrap stats below */
 }
 
 .month-toggle-btn:hover {
@@ -47,23 +45,16 @@ h1,
   border-color: #55ff55;
 }
 
-.month-name,
-.season-title {
-  font-size: 2rem;
-  font-family: 'Dancing Script', cursive;
-  font-weight: normal;
-  white-space: nowrap;
-  margin-right: 18px;
-  overflow-wrap: anywhere;
+.month-name {
+  flex: 1;
+  text-align: left;
 }
 
-.month-stats,
-.season-stats {
-  font-size: 1.25rem;
-  font-family: 'Dancing Script', cursive;
-  white-space: nowrap;
-  margin-left: 18px;
-  overflow-wrap: anywhere;
+.month-stats {
+  flex: 1;
+  text-align: right;
+  font-size: 1.2rem;
+  margin-left: 12px;
 }
 
 .season-btn {
@@ -74,8 +65,8 @@ h1,
 .parlays-dropdown {
   background: #111;
   border-left: 2px solid limegreen;
-  border-radius: 0 0 12px 12px;
-  padding: 16px 18px 19px 22px;
+  border-radius: 0 0 7px 7px;
+  padding: 10px 10px 15px 15px;
 }
 
 /* Center everything only for screens wider than 800px (laptop/desktop) */
@@ -86,13 +77,13 @@ h1,
     align-items: center;
   }
   .month-toggle-btn, .season-btn, .parlays-dropdown {
-    max-width: 700px;
-    min-width: 380px;
+    max-width: 600px;
+    min-width: 320px;
     text-align: left;
   }
 }
 
-/* Parlay and match details */
+/* Match and parlay details: Use Arial */
 .parlay-date,
 .total-odds,
 .parlay .match {
@@ -100,6 +91,7 @@ h1,
   font-size: 1.3rem;
 }
 
+/* Optional: Make .parlay .match a little smaller for odds/details */
 .parlay .match {
   font-size: 1.15rem;
 }
@@ -112,10 +104,10 @@ h1,
 
 .parlay {
   border: 2px solid;
-  padding: 16px;
-  margin: 14px 0;
-  border-radius: 12px;
+  padding: 10px;
+  margin: 10px 0;
   display: none;
+  border-radius: 5px;
 }
 
 .parlay.show {
@@ -146,7 +138,8 @@ h1,
   font-size: 1.2em;
 }
 
-/* Make things more spacious and adaptive on small screens */
+/* Make things more spacious on small screens */
+@media (max-width: 600px) {
 @media (max-width: 600px) {
   body {
     padding: 10px;
@@ -157,45 +150,49 @@ h1,
     margin-bottom: 10px;
   }
 
-  /* Month and season buttons: compact, all on one line, but wrap if needed */
+  /* Month and season buttons: compact, all on one line */
   .season-btn,
   .month-toggle-btn {
-    font-size: 1.1rem;
-    padding: 12px 6px;
-    border-radius: 16px;
-    margin: 12px 0 11px 0;
-    flex-wrap: wrap;
-    gap: 6px;
-    min-width: unset;
-    max-width: 99vw;
+    font-size: 1rem;
+    padding: 8px 4px;
+    border-radius: 14px;
+    margin: 10px 0 8px 0;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    white-space: nowrap;
   }
 
   .season-title,
   .month-name {
-    font-size: 1.04rem;
-    margin-right: 7px;
+    font-size: 1rem;
+    font-family: 'Dancing Script', cursive;
+    margin-right: 6px;
     white-space: nowrap;
     font-weight: normal;
-    overflow-wrap: anywhere;
   }
 
   .season-stats,
   .month-stats {
-    font-size: 1.04rem;
-    margin-left: 7px;
-    overflow-wrap: anywhere;
+    font-size: 1rem;
+    font-family: 'Dancing Script', cursive;
+    white-space: nowrap;
+    font-weight: normal;
+    margin-left: 6px;
   }
 
   /* Parlay card dropdown styles */
   .parlays-dropdown {
-    padding: 10px 2px 14px 6px;
-    margin-top: 7px;
-    border-radius: 12px;
+    padding: 7px 2px 10px 2px;
+    margin-top: 4px;
+    border-radius: 10px;
   }
 
   .parlay-date,
   .total-odds {
-    font-size: 0.98rem !important;
+    font-size: 0.92rem !important;
     font-family: 'Dancing Script', cursive;
     margin-bottom: 2px;
     margin-top: 7px;
@@ -203,13 +200,13 @@ h1,
   }
 
   .parlay {
-    padding: 12px 4px;
-    margin: 10px 0;
-    border-radius: 10px;
+    padding: 6px 2px;
+    margin: 8px 0;
+    border-radius: 8px;
   }
 
   .parlay .match {
-    font-size: 0.88rem !important;
+    font-size: 0.78rem !important;
     font-family: Arial, Helvetica, sans-serif;
     margin: 2px 0;
     padding-bottom: 0;
