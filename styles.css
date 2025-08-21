@@ -140,83 +140,46 @@ h1,
 
 /* Make things more spacious on small screens */
 @media (max-width: 600px) {
-@media (max-width: 600px) {
-  body {
-    padding: 10px;
-  }
-
   h1 {
-    font-size: 1.4em;
-    margin-bottom: 10px;
+    font-size: 2.1em;
+    margin-bottom: 15px;
   }
 
-  /* Month and season buttons: compact, all on one line */
-  .season-btn,
-  .month-toggle-btn {
-    font-size: 1rem;
-    padding: 8px 4px;
-    border-radius: 14px;
-    margin: 10px 0 8px 0;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-    white-space: nowrap;
+  .month-toggle-btn, .season-btn {
+    font-size: 1.4rem;
+    padding: 10px 8px;
+    margin: 16px 0 8px 0;
+    border-radius: 16px;
   }
 
-  .season-title,
-  .month-name {
-    font-size: 1rem;
-    font-family: 'Dancing Script', cursive;
-    margin-right: 6px;
-    white-space: nowrap;
-    font-weight: normal;
+  .month-name, .month-stats {
+    font-size: 1.1rem;
   }
 
-  .season-stats,
-  .month-stats {
-    font-size: 1rem;
-    font-family: 'Dancing Script', cursive;
-    white-space: nowrap;
-    font-weight: normal;
-    margin-left: 6px;
-  }
-
-  /* Parlay card dropdown styles */
-  .parlays-dropdown {
-    padding: 7px 2px 10px 2px;
-    margin-top: 4px;
-    border-radius: 10px;
-  }
-
-  .parlay-date,
-  .total-odds {
-    font-size: 0.92rem !important;
-    font-family: 'Dancing Script', cursive;
-    margin-bottom: 2px;
-    margin-top: 7px;
-    font-weight: bold;
+  .parlay-date {
+    font-size: 1.1rem;
+    margin-top: 18px;
+    margin-bottom: 8px;
   }
 
   .parlay {
-    padding: 6px 2px;
-    margin: 8px 0;
-    border-radius: 8px;
+    margin: 16px 0;
+    padding: 14px 8px;
+    border-radius: 10px;
   }
 
-  .parlay .match {
-    font-size: 0.78rem !important;
-    font-family: Arial, Helvetica, sans-serif;
-    margin: 2px 0;
-    padding-bottom: 0;
-    display: flex;
-    justify-content: space-between;
+  .total-odds {
+    font-size: 1.1rem;
+    margin-bottom: 8px;
   }
 
-  /* Ensure stats and names wrap nicely if too long */
-  .month-toggle-btn span,
-  .season-btn span {
-    overflow-wrap: anywhere;
+  .match {
+    font-size: 1rem;
+    margin: 7px 0;
+    padding-bottom: 2px;
+  }
+
+  .parlays-dropdown {
+    padding: 12px 7px 18px 10px;
   }
 }
