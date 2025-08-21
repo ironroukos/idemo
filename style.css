@@ -85,10 +85,14 @@ h1,
     flex-direction: column;
     align-items: center;
   }
-  .month-toggle-btn, .season-btn, .parlays-dropdown {
-    max-width: 100%;
-    min-width: unset;
-    text-align: left;
+  .month-toggle-btn,
+  .season-btn,
+  .parlays-dropdown,
+  .parlay {
+    max-width: 100%;   /* stretch fully */
+    min-width: unset;  /* no min restriction */
+    width: 100%;       /* force match button width */
+    box-sizing: border-box; /* make sure padding doesn’t break layout */
   }
 }
 
