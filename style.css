@@ -145,27 +145,34 @@ h1,
     margin-bottom: 15px;
   }
 
-  .season-btn, .month-toggle-btn {
-    font-size: 1.2rem;
-    padding: 10px 6px;
+  .month-toggle-btn, .season-btn {
+    font-size: 1.4rem;
+    padding: 10px 8px;
+    margin: 16px 0 8px 0;
     border-radius: 16px;
   }
 
   .month-name, .month-stats {
     font-size: 1.1rem;
   }
-  
-  .parlay-date, .total-odds {
+
+  .parlay-date {
     font-size: 1.1rem;
-    margin-top: 10px;
-    margin-bottom: 6px;
+    margin-top: 18px;
+    margin-bottom: 8px;
   }
-  
+
   .parlay {
-    padding: 12px 6px;
-    margin: 12px 0;
+    margin: 16px 0;
+    padding: 14px 8px;
+    border-radius: 10px;
   }
-  
+
+  .total-odds {
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+  }
+
   .match {
     font-size: 1rem;
     margin: 7px 0;
