@@ -141,7 +141,6 @@ h1,
 
 /* Make things more spacious on small screens */
 @media (max-width: 600px) {
-@media (max-width: 600px) {
   body {
     padding: 10px;
   }
