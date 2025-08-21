@@ -223,3 +223,22 @@ h1,
     overflow-wrap: anywhere;
   }
 }
+/* Portrait mobile layout */
+@media (max-width: 600px) and (orientation: portrait) {
+  .season-btn,
+  .month-toggle-btn {
+    flex-direction: column;   /* stack vertically */
+    align-items: center;      /* center horizontally */
+    text-align: center;       /* center text */
+  }
+
+  .season-title,
+  .month-name {
+    margin: 0 0 6px 0;  /* space below title */
+  }
+
+  .season-stats,
+  .month-stats {
+    margin: 6px 0 0 0;  /* space above stats */
+  }
+}
