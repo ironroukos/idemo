@@ -97,7 +97,7 @@ function populateSeasonAndMonths() {
   const seasonBtn = document.createElement("button");
   seasonBtn.className = "month-toggle-btn season-btn";
   seasonBtn.innerHTML = `
-    <span class="month-name">Season<br>2025–<br>2026</span>
+    <span class="month-name">Season 2025–2026</span>
     <span class="month-stats">
       Wins: ${seasonStats.wins} | 
       Losses: ${seasonStats.losses} | 
