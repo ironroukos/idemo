@@ -4,6 +4,9 @@ const sheetID = "1hqgI3ZtPxQfSTA9y5w3jBmedTZP7sqlMGIVqm4mqZB8";
 // 🔹 Array to store all data from the sheet
 let rawData = [];
 
+// 🔹 Starting bank
+const START_BANK = 500;
+
 function parseDate(ddmm) {
   if (!ddmm) return null;
   const [day, month] = ddmm.split('/');
@@ -93,7 +96,10 @@ function populateSeasonAndMonths() {
   const container = document.getElementById("monthButtons");
   container.innerHTML = "";
 
-  // 1️⃣ Season Button (classic style, not clickable)
+  // 🔹 Season Button (Bank αντί για Profit)
+  const currentBank = START_BANK + seasonStats.profit;
+  const bankColor = currentBank > START_BANK ? "limegreen" : (currentBank < START_BANK ? "red" : "gold");
+
   const seasonBtn = document.createElement("button");
   seasonBtn.className = "month-toggle-btn season-btn";
   seasonBtn.innerHTML = `
@@ -101,14 +107,14 @@ function populateSeasonAndMonths() {
     <span class="month-stats">
       Wins: ${seasonStats.wins} | 
       Losses: ${seasonStats.losses} | 
-      Profit: <span style="color:${seasonStats.profit>=0?'limegreen':'red'}">${seasonStats.profit}</span>
+      Bank: <span style="color:${bankColor}">${currentBank.toFixed(2)}</span>
     </span>
   `;
   seasonBtn.disabled = true;
   seasonBtn.style.pointerEvents = "none";
   container.appendChild(seasonBtn);
 
-  // 2️⃣ Month Buttons (reverse chronological order)
+  // 🔹 Month Buttons
   Object.keys(parlaysByMonth)
     .sort((a, b) => monthDates[b] - monthDates[a]) // Newest month first
     .forEach(month => {
@@ -121,6 +127,9 @@ function populateSeasonAndMonths() {
       });
       const stats = getParlayStats(monthParlays);
 
+      const monthBank = START_BANK + stats.profit;
+      const bankColorM = monthBank > START_BANK ? "limegreen" : (monthBank < START_BANK ? "red" : "gold");
+
       const btn = document.createElement("button");
       btn.className = "month-toggle-btn";
       btn.innerHTML = `
@@ -128,7 +137,7 @@ function populateSeasonAndMonths() {
         <span class="month-stats">
           Wins: ${stats.wins} | 
           Losses: ${stats.losses} | 
-          Profit: <span style="color:${stats.profit>=0?'limegreen':'red'}">${stats.profit}</span>
+          Bank: <span style="color:${bankColorM}">${monthBank.toFixed(2)}</span>
         </span>
       `;
 
@@ -170,19 +179,19 @@ function renderParlaysForMonth(monthData, container) {
         // Only render if there are valid matches in this parlay
         if (!parlay[0].match || !parlay[0].prediction || !parlay[0].odds) return;
 
-        // Date header
-        const dateHeader = document.createElement("div");
-        dateHeader.classList.add("parlay-date");
-        dateHeader.textContent = jsDate ? jsDate.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit' }) : "Invalid Date";
-        container.appendChild(dateHeader);
-
-        // Parlay card
+        // 📌 Parlay card with date + odds in same line
         const parlayDiv = document.createElement("div");
         parlayDiv.classList.add("parlay");
         parlayDiv.classList.add(result === "profit" ? "won" : "lost");
 
+        const dateStr = jsDate ? jsDate.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit' }) : "??/??";
+
         parlayDiv.innerHTML = `
-          <div class="total-odds">Total Odds: ${parlayOdds || "N/A"}</div>
+          <div class="parlay-meta">
+            <span class="parlay-date">${dateStr}</span>
+            <span class="sep">•</span>
+            <span class="total-odds">Total Odds: ${parlayOdds || "N/A"}</span>
+          </div>
           ${parlay.map(m => `
             <div class="match">
               <span>${m.match} (${m.prediction})</span>
@@ -199,7 +208,7 @@ function renderParlaysForMonth(monthData, container) {
 }
 
 // ==========================
-// 5️⃣ Auto-refresh every 60s
+//  Auto-refresh every 60s
 // ==========================
 fetchData();
 setInterval(fetchData, 60000);
