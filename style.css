@@ -246,3 +246,21 @@ h1,
     margin: 6px 0 0 0;  /* space above stats */
   }
 }
+.parlay-meta {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: .6rem;
+  font-weight: bold;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.parlay-date, .total-odds {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 1.2rem;
+}
+
+.sep {
+  opacity: 0.7;
+}
