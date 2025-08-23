@@ -25,6 +25,11 @@ async function fetchData() {
   try {
     const url = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?sheet=${encodeURIComponent(SHEET_NAME)}&tqx=out:json`;
     const res = await fetch(url);
+    
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+    
     const text = await res.text();
     const json = JSON.parse(text.substring(47).slice(0, -2));
     const rows = json.table.rows;
@@ -47,8 +52,17 @@ async function fetchData() {
     }).filter(r => r.date && r.match && r.prediction && r.odds);
 
     populateSeasonAndMonths();
+    
   } catch (err) {
     console.error("Error fetching data", err);
+    // Update UI to show error if elements exist
+    const seasonBank = document.getElementById("seasonBank");
+    const seasonWins = document.getElementById("seasonWins");
+    const seasonLosses = document.getElementById("seasonLosses");
+    
+    if (seasonBank) seasonBank.innerText = "Bank: Error loading";
+    if (seasonWins) seasonWins.innerText = "Wins: Error loading";
+    if (seasonLosses) seasonLosses.innerText = "Losses: Error loading";
   }
 }
 
@@ -95,9 +109,15 @@ function populateSeasonAndMonths() {
   const seasonStats = getParlayStats(allParlays);
   const currentBank = START_BANK + seasonStats.profit;
 
-  document.getElementById("seasonBank").innerText = `Bank: ${currentBank.toFixed(2)}`;
-  document.getElementById("seasonWins").innerText = `Wins: ${seasonStats.wins}`;
-  document.getElementById("seasonLosses").innerText = `Losses: ${seasonStats.losses}`;
+  // Update season button stats
+  const bankColor = currentBank > START_BANK ? "limegreen" : (currentBank < START_BANK ? "red" : "gold");
+  const seasonBank = document.getElementById("seasonBank");
+  const seasonWins = document.getElementById("seasonWins");
+  const seasonLosses = document.getElementById("seasonLosses");
+  
+  if (seasonBank) seasonBank.innerHTML = `Bank: <span style="color:${bankColor}">${currentBank.toFixed(2)}</span>`;
+  if (seasonWins) seasonWins.innerText = `Wins: ${seasonStats.wins}`;
+  if (seasonLosses) seasonLosses.innerText = `Losses: ${seasonStats.losses}`;
 
   // 🔹 Bank carry-over ανά μήνα
   let runningBank = START_BANK;
@@ -116,42 +136,92 @@ function populateSeasonAndMonths() {
     monthStatsMap[month] = { wins: stats.wins, losses: stats.losses, profit: stats.profit, bank: runningBank };
   });
 
+  // 🔹 Populate Season Dropdown with Monthly Summaries
+  const seasonDropdown = document.getElementById("seasonDropdown");
+  if (seasonDropdown) {
+    seasonDropdown.innerHTML = "";
+    
+    // Show months in chronological order (oldest first) in the dropdown
+    sortedMonths.forEach(month => {
+      const stats = monthStatsMap[month];
+      const bankColor = stats.bank > START_BANK ? "limegreen" : (stats.bank < START_BANK ? "red" : "gold");
+      
+      const monthSummary = document.createElement("div");
+      monthSummary.className = "month-summary";
+      monthSummary.innerHTML = `
+        <span class="month-summary-name">${month}</span>
+        <span class="month-summary-stats">
+          W: ${stats.wins} | L: ${stats.losses} | 
+          Bank: <span style="color:${bankColor}">${stats.bank.toFixed(2)}</span>
+        </span>
+      `;
+      seasonDropdown.appendChild(monthSummary);
+    });
+  }
+
+  // 🔹 Season Button Click Event (remove existing event listeners first)
+  const seasonButton = document.getElementById("seasonButton");
+  if (seasonButton) {
+    // Clone the button to remove all existing event listeners
+    const newSeasonButton = seasonButton.cloneNode(true);
+    seasonButton.parentNode.replaceChild(newSeasonButton, seasonButton);
+    
+    // Add the click event listener
+    newSeasonButton.addEventListener("click", () => {
+      // Close all month dropdowns first
+      document.querySelectorAll('.parlays-dropdown').forEach(el => {
+        if (el.id !== 'seasonDropdown') el.style.display = "none";
+      });
+      // Toggle season dropdown
+      const dropdown = document.getElementById("seasonDropdown");
+      if (dropdown) {
+        dropdown.style.display = dropdown.style.display === "none" ? "block" : "none";
+      }
+    });
+  }
+
   // 🔹 Month Buttons
   const container = document.getElementById("monthButtons");
-  container.innerHTML = "";
+  if (container) {
+    container.innerHTML = "";
 
-  // Newest month first για εμφάνιση
-  [...sortedMonths].sort((a, b) => monthDates[b] - monthDates[a]).forEach(month => {
-    const stats = monthStatsMap[month];
-    const bankColor = stats.bank > START_BANK ? "limegreen" : (stats.bank < START_BANK ? "red" : "gold");
+    // Newest month first για εμφάνιση
+    [...sortedMonths].sort((a, b) => monthDates[b] - monthDates[a]).forEach(month => {
+      const stats = monthStatsMap[month];
+      const bankColor = stats.bank > START_BANK ? "limegreen" : (stats.bank < START_BANK ? "red" : "gold");
 
-    const btn = document.createElement("button");
-    btn.className = "month-toggle-btn";
-    btn.innerHTML = `
-      <span class="month-name">${month}</span>
-      <span class="month-stats">
-        Wins: ${stats.wins} | 
-        Losses: ${stats.losses} | 
-        Bank: <span style="color:${bankColor}">${stats.bank.toFixed(2)}</span>
-      </span>
-    `;
+      const btn = document.createElement("button");
+      btn.className = "month-toggle-btn";
+      btn.innerHTML = `
+        <span class="month-name">${month}</span>
+        <span class="month-stats">
+          Wins: ${stats.wins} | 
+          Losses: ${stats.losses} | 
+          Bank: <span style="color:${bankColor}">${stats.bank.toFixed(2)}</span>
+        </span>
+      `;
 
-    const parlaysContainer = document.createElement("div");
-    parlaysContainer.className = "parlays-dropdown";
-    parlaysContainer.style.display = "none";
-    parlaysContainer.style.marginTop = "5px";
-    renderParlaysForMonth(parlaysByMonth[month], parlaysContainer);
+      const parlaysContainer = document.createElement("div");
+      parlaysContainer.className = "parlays-dropdown";
+      parlaysContainer.style.display = "none";
+      parlaysContainer.style.marginTop = "5px";
+      renderParlaysForMonth(parlaysByMonth[month], parlaysContainer);
 
-    btn.addEventListener("click", () => {
-      document.querySelectorAll('.parlays-dropdown').forEach(el => {
-        if (el !== parlaysContainer) el.style.display = "none";
+      btn.addEventListener("click", () => {
+        // Close season dropdown when opening month
+        const seasonDropdown = document.getElementById("seasonDropdown");
+        if (seasonDropdown) seasonDropdown.style.display = "none";
+        
+        document.querySelectorAll('.parlays-dropdown').forEach(el => {
+          if (el !== parlaysContainer && el.id !== 'seasonDropdown') el.style.display = "none";
+        });
+        parlaysContainer.style.display = parlaysContainer.style.display === "none" ? "block" : "none";
       });
-      parlaysContainer.style.display = parlaysContainer.style.display === "none" ? "block" : "none";
-    });
 
-    container.appendChild(btn);
-    container.appendChild(parlaysContainer);
-  });
+      container.appendChild(btn);
+      container.appendChild(parlaysContainer);
+    });
+  }
 }
 
 function renderParlaysForMonth(monthData, container) {
