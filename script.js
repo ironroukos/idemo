@@ -98,7 +98,14 @@ function getParlayStats(parlays) {
   let pickWins = 0, pickLosses = 0;
   let finalBank = START_BANK;
 
-  Object.values(parlays).forEach(parlay => {
+  // Sort parlays by date to get the chronologically last bank value
+  const sortedParlays = Object.entries(parlays).sort(([keyA, parlayA], [keyB, parlayB]) => {
+    const dateA = parseDate(parlayA[0].date);
+    const dateB = parseDate(parlayB[0].date);
+    return dateA - dateB;
+  });
+
+  sortedParlays.forEach(([key, parlay]) => {
     // Check parlay result for parlay stats
     const parlayResult = (parlay[0].parlayResult || "").toLowerCase();
     if (parlayResult === "won") parlayWins++;
@@ -111,7 +118,7 @@ function getParlayStats(parlays) {
       else if (pickResult === "lost") pickLosses++;
     });
 
-    // Use the actual bank value from the last entry of this parlay
+    // Update final bank with the last entry of this parlay (chronologically last)
     const bankValue = Number(parlay[parlay.length - 1].bank);
     if (!isNaN(bankValue)) {
       finalBank = bankValue;
