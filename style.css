@@ -132,6 +132,7 @@ h1,
 /* Parlay and match details */
 .parlay-date,
 .total-odds,
+.parlay-result,
 .parlay .match {
   font-family: Arial, Helvetica, sans-serif;
   font-size: 1.3rem;
@@ -168,14 +169,94 @@ h1,
   border-color: red;
 }
 
-.total-odds {
+.parlay-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: .6rem;
   font-weight: bold;
-  margin-bottom: 5px;
+  margin-bottom: 8px;
+  text-align: center;
 }
 
+.total-odds, .parlay-result {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 1.2rem;
+}
+
+.parlay-result {
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.1);
+}
+
+/* Enhanced match display */
 .match {
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  margin: 8px 0;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.match:last-child {
+  border-bottom: none;
+}
+
+.match-info {
+  flex: 1;
+}
+
+.match-name {
+  font-weight: bold;
+  margin-bottom: 4px;
+  font-size: 1.1rem;
+}
+
+.match-details {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  font-size: 0.95rem;
+}
+
+.prediction {
+  color: #ccc;
+  background: rgba(255,255,255,0.1);
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+.match-result {
+  color: #aaa;
+  font-style: italic;
+}
+
+.prediction-result {
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.prediction-result.won {
+  color: limegreen;
+  background: rgba(0,255,0,0.1);
+}
+
+.prediction-result.lost {
+  color: red;
+  background: rgba(255,0,0,0.1);
+}
+
+.odds {
+  font-weight: bold;
+  font-size: 1.1rem;
+  color: gold;
+  margin-left: 12px;
 }
 
 #stats {
@@ -248,7 +329,8 @@ h1,
   }
 
   .parlay-date,
-  .total-odds {
+  .total-odds,
+  .parlay-result {
     font-size: 0.98rem !important;
     font-family: 'Dancing Script', cursive;
     margin-bottom: 2px;
@@ -262,13 +344,36 @@ h1,
     border-radius: 10px;
   }
 
-  .parlay .match {
-    font-size: 0.88rem !important;
-    font-family: Arial, Helvetica, sans-serif;
-    margin: 2px 0;
-    padding-bottom: 0;
-    display: flex;
-    justify-content: space-between;
+  .parlay-meta {
+    flex-direction: column;
+    gap: 4px;
+    align-items: center;
+  }
+
+  .match {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    padding: 6px 0;
+  }
+
+  .match-info {
+    width: 100%;
+  }
+
+  .match-name {
+    font-size: 0.95rem;
+  }
+
+  .match-details {
+    font-size: 0.85rem;
+    gap: 4px;
+  }
+
+  .odds {
+    align-self: flex-end;
+    margin-left: 0;
+    font-size: 0.95rem;
   }
 
   /* Ensure stats and names wrap nicely if too long */
@@ -309,26 +414,11 @@ h1,
   }
 }
 
-.parlay-meta {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: .6rem;
-  font-weight: bold;
-  margin-bottom: 8px;
-  text-align: center;
-}
-
-.parlay-date, .total-odds {
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 1.2rem;
-}
-
 .sep {
   opacity: 0.7;
 }
 
-/* 🔹 Νέο snippet για ημερομηνίες */
+/* 🔹 Date dividers */
 .date-divider {
   text-align: center;
   font-size: 1.4rem;
