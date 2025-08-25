@@ -5,8 +5,8 @@ const SHEET_NAME = "season 2025/2026";
 // 🔹 Array to store all data from the sheet
 let rawData = [];
 
-// 🔹 Starting bank (changed to 100)
-const START_BANK = 100;
+// 🔹 Starting bank (set to 0 for pure profit/loss tracking)
+const START_BANK = 0;
 
 // 🔹 Start year of season
 const SEASON_START_YEAR = 2025;
@@ -174,7 +174,7 @@ function populateSeasonAndMonths() {
   if (seasonPickWins) seasonPickWins.innerText = `Pick W: ${seasonStats.pickWins}`;
   if (seasonPickLosses) seasonPickLosses.innerText = `Pick L: ${seasonStats.pickLosses}`;
 
-  // 🔹 Calculate monthly stats with proper bank tracking
+  // 🔹 Calculate monthly stats with cumulative bank tracking
   const sortedMonths = Object.keys(parlaysByMonth).sort((a, b) => monthDates[a] - monthDates[b]);
   const monthStatsMap = {};
   
@@ -186,8 +186,47 @@ function populateSeasonAndMonths() {
         monthParlays[key] = parlayArr;
       });
     });
-    const stats = getParlayStats(monthParlays);
-    monthStatsMap[month] = stats;
+    
+    // Get month's individual parlay/pick stats
+    let parlayWins = 0, parlayLosses = 0;
+    let pickWins = 0, pickLosses = 0;
+    
+    Object.values(monthParlays).forEach(parlay => {
+      // Check parlay result for parlay stats
+      const parlayResult = (parlay[0].parlayResult || "").toLowerCase();
+      if (parlayResult === "won") parlayWins++;
+      else if (parlayResult === "lost") parlayLosses++;
+
+      // Check individual pick results for pick stats
+      parlay.forEach(pick => {
+        const pickResult = (pick.pickResult || "").toLowerCase();
+        if (pickResult === "won") pickWins++;
+        else if (pickResult === "lost") pickLosses++;
+      });
+    });
+    
+    // Find the final bank value for this month (from the latest date in the month)
+    let finalBankForMonth = START_BANK;
+    const monthDatesArray = Object.keys(parlaysByMonth[month]).sort((a, b) => parseDate(b) - parseDate(a));
+    if (monthDatesArray.length > 0) {
+      const latestDate = monthDatesArray[0];
+      const latestDateParlays = Object.values(parlaysByMonth[month][latestDate]);
+      if (latestDateParlays.length > 0) {
+        const lastParlay = latestDateParlays[latestDateParlays.length - 1];
+        const bankValue = Number(lastParlay[lastParlay.length - 1].bank);
+        if (!isNaN(bankValue)) {
+          finalBankForMonth = bankValue;
+        }
+      }
+    }
+    
+    monthStatsMap[month] = {
+      parlayWins,
+      parlayLosses,
+      pickWins,
+      pickLosses,
+      bank: finalBankForMonth
+    };
   });
 
   // 🔹 Populate Season Dropdown with Monthly Summaries
