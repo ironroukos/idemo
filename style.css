@@ -3,6 +3,8 @@ body {
   color: white;
   font-family: 'Dancing Script', cursive;
   padding: 20px;
+  margin: 0;
+  min-height: 100vh;
 }
 
 h1 {
@@ -10,6 +12,7 @@ h1 {
   font-size: 3em;
   text-align: center;
   margin-bottom: 20px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 /* Buttons: Month / Season */
@@ -31,36 +34,74 @@ h1 {
   align-items: center;
   text-align: left;
   box-sizing: border-box;
-  transition: background 0.2s, border 0.2s;
+  transition: all 0.3s ease;
   flex-wrap: wrap;
+  position: relative;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 .month-toggle-btn:hover, .season-btn:hover {
-  background: rgba(0,255,0,0.05);
+  background: rgba(0,255,0,0.1);
   border-color: #55ff55;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
 }
 
 .month-name, .season-title {
   font-size: 2rem;
   margin-right: 18px;
   white-space: nowrap;
+  font-weight: 600;
 }
 
 .month-stats, .season-stats {
   font-size: 1.25rem;
   margin-left: 18px;
   white-space: nowrap;
+  font-family: Arial, sans-serif;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Individual stat items */
+.month-stats span, .season-stats span {
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  font-size: 1rem;
+  white-space: nowrap;
 }
 
 /* Season button active */
-.season-btn { cursor: pointer; pointer-events: auto; }
+.season-btn { 
+  cursor: pointer; 
+  pointer-events: auto;
+  border-color: #FFD700; /* Gold border for season */
+}
 
 /* Dropdown container for month */
 .parlays-dropdown {
-  background: #111;
-  border-left: 2px solid limegreen;
-  border-radius: 0 0 12px 12px;
+  background: linear-gradient(135deg, #111 0%, #1a1a1a 100%);
+  border: 1px solid #333;
+  border-left: 3px solid limegreen;
+  border-radius: 12px;
   padding: 16px 18px 19px 22px;
+  margin-top: 5px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Monthly summary inside season dropdown */
@@ -73,39 +114,100 @@ h1 {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  transition: background 0.2s ease;
+  transition: all 0.3s ease;
+  cursor: pointer;
 }
 
-.month-summary:hover { background: rgba(0,0,0,0.5); border-color: #555; }
-
-.month-summary-name { font-size: 1.3rem; font-weight: bold; color: limegreen; }
-.month-summary-stats { font-size: 1.1rem; font-family: Arial, sans-serif; white-space: nowrap; }
-
-/* Parlay card per date */
-.date-divider {
-  text-align: center;
-  font-size: 1.4rem;
-  font-weight: bold;
-  margin: 14px 0 6px 0;
-  color: white;
-  border-bottom: 1px solid #555;
-  padding-bottom: 6px;
+.month-summary:hover { 
+  background: rgba(0,0,0,0.6); 
+  border-color: limegreen;
+  transform: translateX(5px);
 }
 
-.parlay-card {
+.month-summary-name { 
+  font-size: 1.3rem; 
+  font-weight: bold; 
+  color: limegreen;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.month-summary-stats { 
+  font-size: 1.1rem; 
+  font-family: Arial, sans-serif; 
+  white-space: nowrap;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.month-summary-stats span {
+  padding: 2px 4px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.1);
+  font-size: 0.9rem;
+}
+
+/* Parlay cards */
+.parlay {
   border: 2px solid;
   border-radius: 12px;
   padding: 16px;
   margin: 12px 0;
   display: none;
   transition: all 0.3s ease;
-  background: #111;
+  background: linear-gradient(135deg, #111 0%, #1a1a1a 100%);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  position: relative;
+  overflow: hidden;
 }
 
-.parlay-card.show { display: block; }
+.parlay.show { 
+  display: block;
+  animation: fadeIn 0.5s ease-out;
+}
 
-.parlay-card.won { border-color: limegreen; }
-.parlay-card.lost { border-color: red; }
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.parlay.won { 
+  border-color: limegreen;
+  background: linear-gradient(135deg, #111 0%, #0d2818 100%);
+}
+
+.parlay.lost { 
+  border-color: red;
+  background: linear-gradient(135deg, #111 0%, #2d1010 100%);
+}
+
+/* Add a subtle pattern for won/lost */
+.parlay.won::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent 0%, limegreen 50%, transparent 100%);
+}
+
+.parlay.lost::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent 0%, red 50%, transparent 100%);
+}
 
 /* Parlay meta (date + total odds) */
 .parlay-meta {
@@ -114,8 +216,10 @@ h1 {
   align-items: center;
   gap: 0.6rem;
   font-weight: bold;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
   text-align: center;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .parlay-date, .total-odds {
@@ -123,57 +227,215 @@ h1 {
   font-size: 1.2rem;
   font-weight: bold;
   color: white;
+  padding: 4px 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
 }
 
-.sep { opacity: 0.7; }
+.sep { 
+  opacity: 0.7;
+  font-size: 1.5rem;
+  color: limegreen;
+}
 
 /* Match inside parlay */
 .parlay .match {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   font-family: Arial, Helvetica, sans-serif;
   font-size: 1.15rem;
-  margin: 3px 0;
+  margin: 8px 0;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  transition: all 0.2s ease;
+  border-left: 3px solid transparent;
 }
 
-.parlay .match.won { color: limegreen; }
-.parlay .match.lost { color: red; }
+.parlay .match:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateX(5px);
+}
 
-/* Parlay summary (total odds + result) */
-.parlay-summary {
-  margin-top: 10px;
+.parlay .match.won { 
+  color: limegreen;
+  border-left-color: limegreen;
+  background: rgba(0, 255, 0, 0.1);
+}
+
+.parlay .match.lost { 
+  color: #ff6b6b;
+  border-left-color: #ff6b6b;
+  background: rgba(255, 0, 0, 0.1);
+}
+
+/* Match details */
+.match span:first-child {
+  flex: 1;
+  margin-right: 10px;
+}
+
+.match span:last-child {
   font-weight: bold;
-  display: flex;
-  justify-content: space-between;
+  padding: 2px 8px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  min-width: 50px;
+  text-align: center;
+}
+
+/* Loading states */
+.loading {
+  opacity: 0.6;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+/* Error states */
+.error {
+  color: #ff6b6b !important;
+  font-weight: bold;
 }
 
 /* Stats container */
-#stats { margin-bottom: 20px; font-size: 1.2em; }
-
-/* Responsive adjustments */
-@media (max-width: 600px) {
-  body { padding: 10px; }
-  h1 { font-size: 1.6em; margin-bottom: 10px; }
-  .month-toggle-btn, .season-btn {
-    font-size: 1.1rem;
-    padding: 12px 6px;
-    border-radius: 16px;
-    margin: 12px 0;
-    flex-wrap: wrap;
-    gap: 6px;
-    width: 99%;
-  }
-  .month-name, .season-title { font-size: 1rem; margin-right: 6px; }
-  .month-stats, .season-stats { font-size: 1rem; margin-left: 6px; }
-  .parlays-dropdown { padding: 10px 6px; margin-top: 7px; border-radius: 12px; }
-  .parlay-card { padding: 12px 6px; margin: 10px 0; border-radius: 10px; }
-  .parlay .match { font-size: 0.88rem; flex-direction: column; align-items: flex-start; gap: 2px; }
-  .parlay-meta { flex-direction: column; gap: 2px; }
-  .parlay-date, .total-odds { font-size: 1rem; }
+#stats { 
+  margin-bottom: 20px; 
+  font-size: 1.2em;
+  text-align: center;
+  padding: 10px;
 }
 
-/* Laptop/Desktop centering */
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  body { padding: 15px; }
+  
+  h1 { 
+    font-size: 2.2em; 
+    margin-bottom: 15px; 
+  }
+  
+  .month-toggle-btn, .season-btn {
+    font-size: 1.4rem;
+    padding: 18px 16px;
+    border-radius: 16px;
+    margin: 16px auto 12px auto;
+    flex-direction: column;
+    gap: 8px;
+    width: 98%;
+    text-align: center;
+  }
+  
+  .month-name, .season-title { 
+    font-size: 1.3rem; 
+    margin: 0;
+  }
+  
+  .month-stats, .season-stats { 
+    font-size: 1rem; 
+    margin: 0;
+    justify-content: center;
+    text-align: center;
+  }
+  
+  .month-stats span, .season-stats span {
+    font-size: 0.9rem;
+    padding: 2px 4px;
+  }
+  
+  .parlays-dropdown { 
+    padding: 12px 8px; 
+    margin-top: 5px; 
+    border-radius: 12px; 
+  }
+  
+  .parlay { 
+    padding: 12px 8px; 
+    margin: 8px 0; 
+    border-radius: 10px; 
+  }
+  
+  .parlay .match { 
+    font-size: 1rem; 
+    flex-direction: column; 
+    align-items: flex-start; 
+    gap: 4px;
+    padding: 6px 8px;
+  }
+  
+  .match span:last-child {
+    align-self: flex-end;
+    margin-top: 4px;
+  }
+  
+  .parlay-meta { 
+    flex-direction: column; 
+    gap: 4px; 
+  }
+  
+  .parlay-date, .total-odds { 
+    font-size: 1rem;
+    padding: 2px 6px;
+  }
+
+  .month-summary {
+    flex-direction: column;
+    gap: 6px;
+    text-align: center;
+  }
+
+  .month-summary-stats {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  body { padding: 10px; }
+  
+  h1 { font-size: 1.8em; }
+  
+  .month-toggle-btn, .season-btn {
+    font-size: 1.2rem;
+    padding: 14px 12px;
+  }
+  
+  .month-name, .season-title { 
+    font-size: 1.1rem; 
+  }
+  
+  .month-stats, .season-stats { 
+    font-size: 0.9rem;
+  }
+}
+
+/* Laptop/Desktop centering and improvements */
 @media (min-width: 800px) {
-  #monthButtons { display: flex; flex-direction: column; align-items: center; }
-  .month-toggle-btn, .season-btn, .parlays-dropdown, .parlay-card { max-width: 100%; min-width: unset; width: 100%; }
+  #monthButtons { 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  
+  .month-toggle-btn, .season-btn, .parlays-dropdown { 
+    max-width: 800px; 
+    width: 100%; 
+  }
+
+  .parlay {
+    max-width: 100%;
+    margin: 12px auto;
+  }
+
+  /* Hover effects for desktop */
+  .month-toggle-btn:hover .month-name,
+  .season-btn:hover .season-title {
+    color: limegreen;
+    text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+  }
 }
