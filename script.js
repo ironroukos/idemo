@@ -5,20 +5,24 @@ const SHEET_NAME = "season 2025/2026";
 // 🔹 Array to store all data from the sheet
 let rawData = [];
 
-// 🔹 Starting bank
-const START_BANK = 500;
+// 🔹 Starting bank (changed to 100)
+const START_BANK = 100;
 
 // 🔹 Start year of season
 const SEASON_START_YEAR = 2025;
 
 // Parse date dd/mm → Date object
 function parseDate(ddmm) {
-  if (!ddmm) return null;
-  const [day, month] = ddmm.split('/');
+  if (!ddmm || typeof ddmm !== 'string') return null;
+  const parts = ddmm.split('/');
+  if (parts.length !== 2) return null;
+  const [day, month] = parts;
   if (!day || !month) return null;
   const m = parseInt(month, 10);
+  const d = parseInt(day, 10);
+  if (isNaN(m) || isNaN(d)) return null;
   const y = m >= 8 ? SEASON_START_YEAR : SEASON_START_YEAR + 1; // Aug–Dec = 2025, Jan–Jul = 2026
-  return new Date(`${y}-${String(m).padStart(2, '0')}-${String(day).padStart(2, '0')}`);
+  return new Date(`${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`);
 }
 
 async function fetchData() {
@@ -34,22 +38,41 @@ async function fetchData() {
     const json = JSON.parse(text.substring(47).slice(0, -2));
     const rows = json.table.rows;
 
-    let lastNonEmpty = { date: null, match: null, prediction: null, odds: null, parlayOdds: null, result: null, profit: null };
+    // Updated data structure to match CSV: Date, Match, Match Result, Pick, Pick Result, Odds, Parlay Odds, Parlay Result, Bank
+    let lastNonEmpty = { 
+      date: null, 
+      match: null, 
+      matchResult: null,
+      pick: null, 
+      pickResult: null,
+      odds: null, 
+      parlayOdds: null, 
+      parlayResult: null,
+      bank: null 
+    };
+
     rawData = rows.map(r => {
       const obj = {
         date: r.c[0]?.v ?? lastNonEmpty.date,
         match: r.c[1]?.v ?? lastNonEmpty.match,
-        prediction: r.c[2]?.v ?? lastNonEmpty.prediction,
-        odds: r.c[3]?.v ?? lastNonEmpty.odds,
-        parlayOdds: r.c[4]?.v ?? lastNonEmpty.parlayOdds,
-        result: r.c[5]?.v ?? lastNonEmpty.result,
-        profit: r.c[6]?.v ?? lastNonEmpty.profit
+        matchResult: r.c[2]?.v ?? lastNonEmpty.matchResult,
+        pick: r.c[3]?.v ?? lastNonEmpty.pick,
+        pickResult: r.c[4]?.v ?? lastNonEmpty.pickResult,
+        odds: r.c[5]?.v ?? lastNonEmpty.odds,
+        parlayOdds: r.c[6]?.v ?? lastNonEmpty.parlayOdds,
+        parlayResult: r.c[7]?.v ?? lastNonEmpty.parlayResult,
+        bank: r.c[8]?.v ?? lastNonEmpty.bank
       };
+
+      // Update lastNonEmpty with non-null values
       Object.keys(obj).forEach(k => {
-        if (obj[k] !== null && obj[k] !== undefined) lastNonEmpty[k] = obj[k];
+        if (obj[k] !== null && obj[k] !== undefined && obj[k] !== '') {
+          lastNonEmpty[k] = obj[k];
+        }
       });
+
       return obj;
-    }).filter(r => r.date && r.match && r.prediction && r.odds);
+    }).filter(r => r.date && r.match && r.pick && r.odds);
 
     populateSeasonAndMonths();
     
@@ -59,22 +82,49 @@ async function fetchData() {
     const seasonBank = document.getElementById("seasonBank");
     const seasonWins = document.getElementById("seasonWins");
     const seasonLosses = document.getElementById("seasonLosses");
+    const seasonPickWins = document.getElementById("seasonPickWins");
+    const seasonPickLosses = document.getElementById("seasonPickLosses");
     
     if (seasonBank) seasonBank.innerText = "Bank: Error loading";
-    if (seasonWins) seasonWins.innerText = "Wins: Error loading";
-    if (seasonLosses) seasonLosses.innerText = "Losses: Error loading";
+    if (seasonWins) seasonWins.innerText = "Parlay W: Error";
+    if (seasonLosses) seasonLosses.innerText = "Parlay L: Error";
+    if (seasonPickWins) seasonPickWins.innerText = "Pick W: Error";
+    if (seasonPickLosses) seasonPickLosses.innerText = "Pick L: Error";
   }
 }
 
 function getParlayStats(parlays) {
-  let wins = 0, losses = 0, profit = 0;
+  let parlayWins = 0, parlayLosses = 0;
+  let pickWins = 0, pickLosses = 0;
+  let finalBank = START_BANK;
+
   Object.values(parlays).forEach(parlay => {
-    const result = (parlay[0].result || "").toLowerCase();
-    if (result === "profit") wins++;
-    else if (result === "loss") losses++;
-    profit += Number(parlay[0].profit) || 0;
+    // Check parlay result for parlay stats
+    const parlayResult = (parlay[0].parlayResult || "").toLowerCase();
+    if (parlayResult === "won") parlayWins++;
+    else if (parlayResult === "lost") parlayLosses++;
+
+    // Check individual pick results for pick stats
+    parlay.forEach(pick => {
+      const pickResult = (pick.pickResult || "").toLowerCase();
+      if (pickResult === "won") pickWins++;
+      else if (pickResult === "lost") pickLosses++;
+    });
+
+    // Use the actual bank value from the last entry of this parlay
+    const bankValue = Number(parlay[parlay.length - 1].bank);
+    if (!isNaN(bankValue)) {
+      finalBank = bankValue;
+    }
   });
-  return { wins, losses, profit };
+
+  return { 
+    parlayWins, 
+    parlayLosses, 
+    pickWins, 
+    pickLosses, 
+    bank: finalBank 
+  };
 }
 
 function populateSeasonAndMonths() {
@@ -96,7 +146,7 @@ function populateSeasonAndMonths() {
     }
   });
 
-  // 🔹 Υπολογισμός Season totals
+  // 🔹 Calculate Season totals
   let allParlays = {};
   Object.values(parlaysByMonth).forEach(monthGroup => {
     Object.values(monthGroup).forEach(dateGroup => {
@@ -106,23 +156,28 @@ function populateSeasonAndMonths() {
       });
     });
   });
+  
   const seasonStats = getParlayStats(allParlays);
-  const currentBank = START_BANK + seasonStats.profit;
+  const currentBank = seasonStats.bank;
 
-  // Update season button stats
+  // Update season button stats with new structure
   const bankColor = currentBank > START_BANK ? "limegreen" : (currentBank < START_BANK ? "red" : "gold");
   const seasonBank = document.getElementById("seasonBank");
   const seasonWins = document.getElementById("seasonWins");
   const seasonLosses = document.getElementById("seasonLosses");
+  const seasonPickWins = document.getElementById("seasonPickWins");
+  const seasonPickLosses = document.getElementById("seasonPickLosses");
   
   if (seasonBank) seasonBank.innerHTML = `Bank: <span style="color:${bankColor}">${currentBank.toFixed(2)}</span>`;
-  if (seasonWins) seasonWins.innerText = `Wins: ${seasonStats.wins}`;
-  if (seasonLosses) seasonLosses.innerText = `Losses: ${seasonStats.losses}`;
+  if (seasonWins) seasonWins.innerText = `Parlay W: ${seasonStats.parlayWins}`;
+  if (seasonLosses) seasonLosses.innerText = `Parlay L: ${seasonStats.parlayLosses}`;
+  if (seasonPickWins) seasonPickWins.innerText = `Pick W: ${seasonStats.pickWins}`;
+  if (seasonPickLosses) seasonPickLosses.innerText = `Pick L: ${seasonStats.pickLosses}`;
 
-  // 🔹 Bank carry-over ανά μήνα
-  let runningBank = START_BANK;
+  // 🔹 Calculate monthly stats with proper bank tracking
   const sortedMonths = Object.keys(parlaysByMonth).sort((a, b) => monthDates[a] - monthDates[b]);
   const monthStatsMap = {};
+  
   sortedMonths.forEach(month => {
     let monthParlays = {};
     Object.values(parlaysByMonth[month]).forEach(dateGroup => {
@@ -132,8 +187,7 @@ function populateSeasonAndMonths() {
       });
     });
     const stats = getParlayStats(monthParlays);
-    runningBank += stats.profit;
-    monthStatsMap[month] = { wins: stats.wins, losses: stats.losses, profit: stats.profit, bank: runningBank };
+    monthStatsMap[month] = stats;
   });
 
   // 🔹 Populate Season Dropdown with Monthly Summaries
@@ -151,7 +205,8 @@ function populateSeasonAndMonths() {
       monthSummary.innerHTML = `
         <span class="month-summary-name">${month}</span>
         <span class="month-summary-stats">
-          W: ${stats.wins} | L: ${stats.losses} | 
+          Parlay W: ${stats.parlayWins} | Parlay L: ${stats.parlayLosses} | 
+          Pick W: ${stats.pickWins} | Pick L: ${stats.pickLosses} | 
           Bank: <span style="color:${bankColor}">${stats.bank.toFixed(2)}</span>
         </span>
       `;
@@ -185,7 +240,7 @@ function populateSeasonAndMonths() {
   if (container) {
     container.innerHTML = "";
 
-    // Newest month first για εμφάνιση
+    // Newest month first for display
     [...sortedMonths].sort((a, b) => monthDates[b] - monthDates[a]).forEach(month => {
       const stats = monthStatsMap[month];
       const bankColor = stats.bank > START_BANK ? "limegreen" : (stats.bank < START_BANK ? "red" : "gold");
@@ -195,8 +250,8 @@ function populateSeasonAndMonths() {
       btn.innerHTML = `
         <span class="month-name">${month}</span>
         <span class="month-stats">
-          Wins: ${stats.wins} | 
-          Losses: ${stats.losses} | 
+          Parlay W: ${stats.parlayWins} | Parlay L: ${stats.parlayLosses} | 
+          Pick W: ${stats.pickWins} | Pick L: ${stats.pickLosses} | 
           Bank: <span style="color:${bankColor}">${stats.bank.toFixed(2)}</span>
         </span>
       `;
@@ -226,19 +281,19 @@ function populateSeasonAndMonths() {
 
 function renderParlaysForMonth(monthData, container) {
   Object.keys(monthData)
-    .sort((a, b) => parseDate(b) - parseDate(a)) // νεότερες ημερομηνίες πρώτα
+    .sort((a, b) => parseDate(b) - parseDate(a)) // newest dates first
     .forEach(date => {
       const dateGroup = monthData[date];
       Object.keys(dateGroup).forEach(parlayOdds => {
         const parlay = dateGroup[parlayOdds];
-        const result = (parlay[0].result || "").toLowerCase();
+        const parlayResult = (parlay[0].parlayResult || "").toLowerCase();
         const jsDate = parseDate(parlay[0].date);
 
-        if (!parlay[0].match || !parlay[0].prediction || !parlay[0].odds) return;
+        if (!parlay[0].match || !parlay[0].pick || !parlay[0].odds) return;
 
         const parlayDiv = document.createElement("div");
         parlayDiv.classList.add("parlay");
-        parlayDiv.classList.add(result === "profit" ? "won" : "lost");
+        parlayDiv.classList.add(parlayResult === "won" ? "won" : "lost");
 
         const dateStr = jsDate ? jsDate.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit' }) : "??/??";
 
@@ -248,12 +303,16 @@ function renderParlaysForMonth(monthData, container) {
             <span class="sep">•</span>
             <span class="total-odds">Total Odds: ${parlayOdds || "N/A"}</span>
           </div>
-          ${parlay.map(m => `
-            <div class="match">
-              <span>${m.match} (${m.prediction})</span>
-              <span>${m.odds}</span>
-            </div>
-          `).join('')}
+          ${parlay.map(m => {
+            const pickResult = (m.pickResult || "").toLowerCase();
+            const pickClass = pickResult === "won" ? "won" : (pickResult === "lost" ? "lost" : "");
+            return `
+              <div class="match ${pickClass}">
+                <span>${m.match} (${m.pick}) - Result: ${m.matchResult || "N/A"}</span>
+                <span>${m.odds}</span>
+              </div>
+            `;
+          }).join('')}
         `;
 
         container.appendChild(parlayDiv);
