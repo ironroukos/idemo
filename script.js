@@ -1,7 +1,7 @@
 // === CONFIG ===
 const sheetID = "1hqgI3ZtPxQfSTA9y5w3jBmedTZP7sqlMGIVqm4mqZB8";
-const SHEET_NAME = "Season 2025/2026";
-const csvUrl = `https://docs.google.com/spreadsheets/d/${1hqgI3ZtPxQfSTA9y5w3jBmedTZP7sqlMGIVqm4mqZB8}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(Season 2025/2026)}`;
+const SHEET_NAME = "season 2025/2026";
+const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEET_NAME)}`;
 
 let csvData = "";
 
