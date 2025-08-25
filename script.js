@@ -2,14 +2,36 @@
 const sheetID = "1hqgI3ZtPxQfSTA9y5w3jBmedTZP7sqlMGIVqm4mqZB8";
 const SHEET_NAME = "season 2025/2026";
 
-// 🔹 Array to store all data from the sheet
 let rawData = [];
 
-// 🔹 Starting bank
+// Starting bank
 const START_BANK = 500;
 
-// 🔹 Start year of season
+// Start year of season
 const SEASON_START_YEAR = 2025;
+
+// Parse CSV function
+function parseCSV(csvText) {
+  const lines = csvText.split('\n');
+  const headers = lines[0].split(',');
+  const data = [];
+  
+  debug(`CSV has ${lines.length} lines with headers: ${headers.join(', ')}`);
+  
+  for (let i = 1; i < lines.length; i++) {
+    if (lines[i].trim()) {
+      const values = lines[i].split(',');
+      const row = {};
+      headers.forEach((header, index) => {
+        row[header.trim()] = values[index] ? values[index].trim() : '';
+      });
+      data.push(row);
+    }
+  }
+  
+  debug(`Parsed ${data.length} data rows`);
+  return data;
+}
 
 // Parse date dd/mm → Date object
 function parseDate(ddmm) {
@@ -21,43 +43,68 @@ function parseDate(ddmm) {
   return new Date(`${y}-${String(m).padStart(2, '0')}-${String(day).padStart(2, '0')}`);
 }
 
-async function fetchData() {
+// Load and process data
+function loadData() {
   try {
-    const url = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?sheet=${encodeURIComponent(SHEET_NAME)}&tqx=out:json`;
-    const res = await fetch(url);
+    debug('Starting to load CSV data...');
     
-    if (!res.ok) {
-      throw new Error(`HTTP error! status: ${res.status}`);
-    }
+    const parsedData = parseCSV(csvData);
     
-    const text = await res.text();
-    const json = JSON.parse(text.substring(47).slice(0, -2));
-    const rows = json.table.rows;
-
-    let lastNonEmpty = { date: null, match: null, matchResult: null, prediction: null, predictionResult: null, odds: null, parlayOdds: null, parlayResult: null, bank: null };
-    rawData = rows.map(r => {
+    // Process the data similar to your original code
+    let lastNonEmpty = { 
+      Date: null, 
+      Match: null, 
+      'Match Result': null, 
+      Pick: null, 
+      'Pick Result': null, 
+      Odds: null, 
+      'Parlay Odds': null, 
+      'Parlay Result': null, 
+      Bank: null 
+    };
+    
+    rawData = parsedData.map(row => {
       const obj = {
-        date: r.c[0]?.v ?? lastNonEmpty.date,
-        match: r.c[1]?.v ?? lastNonEmpty.match,
-        matchResult: r.c[2]?.v ?? lastNonEmpty.matchResult,
-        prediction: r.c[3]?.v ?? lastNonEmpty.prediction,
-        predictionResult: r.c[4]?.v ?? lastNonEmpty.predictionResult,
-        odds: r.c[5]?.v ?? lastNonEmpty.odds,
-        parlayOdds: r.c[6]?.v ?? lastNonEmpty.parlayOdds,
-        parlayResult: r.c[7]?.v ?? lastNonEmpty.parlayResult,
-        bank: r.c[8]?.v ?? lastNonEmpty.bank
+        date: row['Date'] || lastNonEmpty.Date,
+        match: row['Match'] || lastNonEmpty.Match,
+        matchResult: row['Match Result'] || lastNonEmpty['Match Result'],
+        prediction: row['Pick'] || lastNonEmpty.Pick,
+        predictionResult: row['Pick Result'] || lastNonEmpty['Pick Result'],
+        odds: row['Odds'] || lastNonEmpty.Odds,
+        parlayOdds: row['Parlay Odds'] || lastNonEmpty['Parlay Odds'],
+        parlayResult: row['Parlay Result'] || lastNonEmpty['Parlay Result'],
+        bank: row['Bank'] || lastNonEmpty.Bank
       };
+      
+      // Update lastNonEmpty with non-empty values
       Object.keys(obj).forEach(k => {
-        if (obj[k] !== null && obj[k] !== undefined) lastNonEmpty[k] = obj[k];
+        const originalKey = k === 'date' ? 'Date' : 
+                           k === 'match' ? 'Match' :
+                           k === 'matchResult' ? 'Match Result' :
+                           k === 'prediction' ? 'Pick' :
+                           k === 'predictionResult' ? 'Pick Result' :
+                           k === 'odds' ? 'Odds' :
+                           k === 'parlayOdds' ? 'Parlay Odds' :
+                           k === 'parlayResult' ? 'Parlay Result' :
+                           k === 'bank' ? 'Bank' : k;
+                           
+        if (obj[k] !== null && obj[k] !== undefined && obj[k] !== '') {
+          lastNonEmpty[originalKey] = obj[k];
+        }
       });
+      
       return obj;
     }).filter(r => r.date && r.match && r.prediction && r.odds);
 
+    debug(`Filtered data: ${rawData.length} valid rows`);
+    
     populateSeasonAndMonths();
     
   } catch (err) {
-    console.error("Error fetching data", err);
-    // Update UI to show error if elements exist
+    debug(`Error loading data: ${err.message}`);
+    console.error("Error loading data", err);
+    
+    // Update UI to show error
     const seasonBank = document.getElementById("seasonBank");
     const seasonWins = document.getElementById("seasonWins");
     const seasonLosses = document.getElementById("seasonLosses");
@@ -65,6 +112,12 @@ async function fetchData() {
     if (seasonBank) seasonBank.innerText = "Bank: Error loading";
     if (seasonWins) seasonWins.innerText = "Wins: Error loading";
     if (seasonLosses) seasonLosses.innerText = "Losses: Error loading";
+    
+    // Show error message
+    const container = document.getElementById("monthButtons");
+    if (container) {
+      container.innerHTML = '<div class="error-message">Failed to load betting data. Check console for details.</div>';
+    }
   }
 }
 
@@ -80,8 +133,7 @@ function getParlayStats(parlays) {
     // Get the bank change from the parlay
     const bankChange = Number(parlay[0].bank) || 0;
     if (bankChange !== 0) {
-      currentBank = START_BANK; // Reset and use the bank value from sheet
-      // Find the latest bank value in chronological order
+      currentBank = START_BANK;
       const latestBankValue = Math.max(...Object.values(parlays)
         .map(p => Number(p[0].bank) || START_BANK));
       currentBank = latestBankValue;
@@ -93,6 +145,8 @@ function getParlayStats(parlays) {
 }
 
 function populateSeasonAndMonths() {
+  debug('Populating season and months...');
+  
   const parlaysByMonth = {};
   const monthDates = {};
 
@@ -111,7 +165,9 @@ function populateSeasonAndMonths() {
     }
   });
 
-  // 🔹 Calculate Season totals using the latest bank value
+  debug(`Grouped into months: ${Object.keys(parlaysByMonth).join(', ')}`);
+
+  // Calculate Season totals using the latest bank value
   let allParlays = {};
   Object.values(parlaysByMonth).forEach(monthGroup => {
     Object.values(monthGroup).forEach(dateGroup => {
@@ -136,10 +192,8 @@ function populateSeasonAndMonths() {
     }
   });
 
-  const seasonStats = getParlayStats(allParlays);
   const currentBank = latestBank;
-  const totalProfit = currentBank - START_BANK;
-
+  
   // Count actual wins/losses
   let seasonWins = 0, seasonLosses = 0;
   Object.values(allParlays).forEach(parlay => {
@@ -148,17 +202,19 @@ function populateSeasonAndMonths() {
     else if (result === "lost") seasonLosses++;
   });
 
+  debug(`Season stats - Wins: ${seasonWins}, Losses: ${seasonLosses}, Bank: ${currentBank}`);
+
   // Update season button stats
   const bankColor = currentBank > START_BANK ? "limegreen" : (currentBank < START_BANK ? "red" : "gold");
-  const seasonBank = document.getElementById("seasonBank");
-  const seasonWins = document.getElementById("seasonWins");
-  const seasonLosses = document.getElementById("seasonLosses");
+  const seasonBankEl = document.getElementById("seasonBank");
+  const seasonWinsEl = document.getElementById("seasonWins");
+  const seasonLossesEl = document.getElementById("seasonLosses");
   
-  if (seasonBank) seasonBank.innerHTML = `Bank: <span style="color:${bankColor}">${currentBank.toFixed(2)}</span>`;
-  if (seasonWins) seasonWins.innerText = `Wins: ${seasonWins}`;
-  if (seasonLosses) seasonLosses.innerText = `Losses: ${seasonLosses}`;
+  if (seasonBankEl) seasonBankEl.innerHTML = `Bank: <span style="color:${bankColor}">${currentBank.toFixed(2)}</span>`;
+  if (seasonWinsEl) seasonWinsEl.innerText = `Wins: ${seasonWins}`;
+  if (seasonLossesEl) seasonLossesEl.innerText = `Losses: ${seasonLosses}`;
 
-  // 🔹 Calculate monthly stats with proper bank tracking
+  // Calculate monthly stats with proper bank tracking
   const sortedMonths = Object.keys(parlaysByMonth).sort((a, b) => monthDates[a] - monthDates[b]);
   const monthStatsMap = {};
   
@@ -190,16 +246,14 @@ function populateSeasonAndMonths() {
       }
     });
     
-    const monthProfit = monthEndBank - START_BANK;
-    monthStatsMap[month] = { wins: monthWins, losses: monthLosses, profit: monthProfit, bank: monthEndBank };
+    monthStatsMap[month] = { wins: monthWins, losses: monthLosses, profit: monthEndBank - START_BANK, bank: monthEndBank };
   });
 
-  // 🔹 Populate Season Dropdown with Monthly Summaries
+  // Populate Season Dropdown with Monthly Summaries
   const seasonDropdown = document.getElementById("seasonDropdown");
   if (seasonDropdown) {
     seasonDropdown.innerHTML = "";
     
-    // Show months in chronological order (oldest first) in the dropdown
     sortedMonths.forEach(month => {
       const stats = monthStatsMap[month];
       const bankColor = stats.bank > START_BANK ? "limegreen" : (stats.bank < START_BANK ? "red" : "gold");
@@ -217,20 +271,16 @@ function populateSeasonAndMonths() {
     });
   }
 
-  // 🔹 Season Button Click Event (remove existing event listeners first)
+  // Season Button Click Event
   const seasonButton = document.getElementById("seasonButton");
   if (seasonButton) {
-    // Clone the button to remove all existing event listeners
     const newSeasonButton = seasonButton.cloneNode(true);
     seasonButton.parentNode.replaceChild(newSeasonButton, seasonButton);
     
-    // Add the click event listener
     newSeasonButton.addEventListener("click", () => {
-      // Close all month dropdowns first
       document.querySelectorAll('.parlays-dropdown').forEach(el => {
         if (el.id !== 'seasonDropdown') el.style.display = "none";
       });
-      // Toggle season dropdown
       const dropdown = document.getElementById("seasonDropdown");
       if (dropdown) {
         dropdown.style.display = dropdown.style.display === "none" ? "block" : "none";
@@ -238,12 +288,11 @@ function populateSeasonAndMonths() {
     });
   }
 
-  // 🔹 Month Buttons
+  // Month Buttons
   const container = document.getElementById("monthButtons");
   if (container) {
     container.innerHTML = "";
 
-    // Newest month first για εμφάνιση
     [...sortedMonths].sort((a, b) => monthDates[b] - monthDates[a]).forEach(month => {
       const stats = monthStatsMap[month];
       const bankColor = stats.bank > START_BANK ? "limegreen" : (stats.bank < START_BANK ? "red" : "gold");
@@ -266,7 +315,6 @@ function populateSeasonAndMonths() {
       renderParlaysForMonth(parlaysByMonth[month], parlaysContainer);
 
       btn.addEventListener("click", () => {
-        // Close season dropdown when opening month
         const seasonDropdown = document.getElementById("seasonDropdown");
         if (seasonDropdown) seasonDropdown.style.display = "none";
         
@@ -279,58 +327,6 @@ function populateSeasonAndMonths() {
       container.appendChild(btn);
       container.appendChild(parlaysContainer);
     });
-  }
-}
-
-function renderParlaysForMonth(monthData, container) {
-  Object.keys(monthData)
-    .sort((a, b) => parseDate(b) - parseDate(a)) // νεότερες ημερομηνίες πρώτα
-    .forEach(date => {
-      const jsDate = parseDate(date);
-      const dateStr = jsDate ? jsDate.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit' }) : "??/??";
-
-      // 🔹 Δημιουργούμε ένα date header πριν τις κάρτες της μέρας
-      const dateHeader = document.createElement("div");
-      dateHeader.className = "date-divider";
-      dateHeader.innerText = dateStr;
-      container.appendChild(dateHeader);
-
-      const dateGroup = monthData[date];
-      Object.keys(dateGroup).forEach(parlayOdds => {
-        const parlay = dateGroup[parlayOdds];
-        const result = (parlay[0].parlayResult || "").toLowerCase();
-
-        const parlayDiv = document.createElement("div");
-        parlayDiv.classList.add("parlay");
-        parlayDiv.classList.add(result === "won" ? "won" : "lost");
-
-        // Show match result in addition to prediction
-        parlayDiv.innerHTML = `
-          <div class="parlay-meta">
-            <span class="total-odds">Total Odds: ${parlayOdds || "N/A"}</span>
-            <span class="parlay-result">Result: ${parlay[0].parlayResult || "N/A"}</span>
-          </div>
-          ${parlay.map(m => `
-            <div class="match">
-              <div class="match-info">
-                <div class="match-name">${m.match}</div>
-                <div class="match-details">
-                  <span class="prediction">${m.prediction}</span>
-                  <span class="match-result">(${m.matchResult || "N/A"})</span>
-                  <span class="prediction-result ${(m.predictionResult || "").toLowerCase()}">${m.predictionResult || "N/A"}</span>
-                </div>
-              </div>
-              <span class="odds">${m.odds}</span>
-            </div>
-          `).join('')}
-        `;
-
-        container.appendChild(parlayDiv);
-        setTimeout(() => parlayDiv.classList.add("show"), 50);
-      });
-    });
-}
-
 // ==========================
 //  Auto-refresh every 60s
 // ==========================
