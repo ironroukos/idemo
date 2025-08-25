@@ -223,29 +223,30 @@ function populateSeasonAndMonths() {
     });
   }
 }
-
 function renderParlaysForMonth(monthData, container) {
   Object.keys(monthData)
     .sort((a, b) => parseDate(b) - parseDate(a)) // νεότερες ημερομηνίες πρώτα
     .forEach(date => {
+      const jsDate = parseDate(date);
+      const dateStr = jsDate ? jsDate.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit' }) : "??/??";
+
+      // 🔹 Δημιουργούμε ένα date header πριν τις κάρτες της μέρας
+      const dateHeader = document.createElement("div");
+      dateHeader.className = "date-divider";
+      dateHeader.innerText = dateStr;
+      container.appendChild(dateHeader);
+
       const dateGroup = monthData[date];
       Object.keys(dateGroup).forEach(parlayOdds => {
         const parlay = dateGroup[parlayOdds];
         const result = (parlay[0].result || "").toLowerCase();
-        const jsDate = parseDate(parlay[0].date);
-
-        if (!parlay[0].match || !parlay[0].prediction || !parlay[0].odds) return;
 
         const parlayDiv = document.createElement("div");
         parlayDiv.classList.add("parlay");
         parlayDiv.classList.add(result === "profit" ? "won" : "lost");
 
-        const dateStr = jsDate ? jsDate.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit' }) : "??/??";
-
         parlayDiv.innerHTML = `
           <div class="parlay-meta">
-            <span class="parlay-date">${dateStr}</span>
-            <span class="sep">•</span>
             <span class="total-odds">Total Odds: ${parlayOdds || "N/A"}</span>
           </div>
           ${parlay.map(m => `
