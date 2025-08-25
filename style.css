@@ -1,3 +1,5 @@
+:root { --primary-color: limegreen; --background-color: black; --text-color: white; --lost-color: red; --border-color-light: #333; --border-color-hover: #555; --font-special: 'Dancing Script', cursive; --font-main: Arial, Helvetica, sans-serif; }
+
 body { background-color: var(--background-color); color: var(--text-color); font-family: var(--font-special); padding: 20px; }
 
 h1 { color: var(--primary-color); font-size: 3em; text-align: center; margin-bottom: 20px; }
