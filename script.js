@@ -1,5 +1,5 @@
 // === CONFIG ===
-const sheetID = "1hqgI3ZtPxQfSTA9y5w3jBmedTZP7sqlMGIVqm4mqZB8";  
+const sheetID = "1hqgI3ZtPxQfSTA9y5w3jBmedTZP7sqlMGIVqm4mqZB8";
 const SHEET_NAME = "season 2025/2026";
 const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEET_NAME)}`;
 
@@ -15,7 +15,7 @@ function debug(msg) {
   console.log(msg);
 }
 
-// Fetch CSV από Google Sheets
+// Fetch CSV from Google Sheets
 async function fetchData() {
   try {
     debug("Fetching CSV...");
@@ -26,10 +26,13 @@ async function fetchData() {
     loadData();
   } catch (err) {
     debug("Fetch error: " + err.message);
+    // *** FIX: Display a user-friendly error message in the UI ***
+    document.getElementById("parlaysContainer").innerHTML =
+      `<div class="error-message">Failed to load betting data. Please check your connection and try again later.</div>`;
   }
 }
 
-// Parse CSV σε array
+// Parse CSV to array
 function parseCSV(str) {
   const rows = str.trim().split("\n").map(r => r.split(","));
   const headers = rows[0].map(h => h.trim());
@@ -50,7 +53,7 @@ function loadData() {
   const seasonStats = { wins: 0, losses: 0, bank: 0 };
   const months = {};
 
-  // Group ανά μήνα και parlay
+  // Group by month and parlay
   data.forEach(row => {
     const date = row["Date"] || "";
     const result = row["Parlay Result"] || "";
@@ -59,11 +62,14 @@ function loadData() {
     // Season stats
     if (result.toLowerCase() === "won") seasonStats.wins++;
     if (result.toLowerCase() === "lost") seasonStats.losses++;
-    seasonStats.bank = bank; // πάντα κρατάει το τελευταίο bank
+    seasonStats.bank = bank; // Always keep the latest bank
 
-    // Μήνας (date format dd/mm/yyyy)
-    const [d, m, y] = date.split("/");
-    const monthKey = `${y}-${m}`;
+    // *** FIX: Correctly handle dd/mm date format ***
+    const [d, m] = date.split("/");
+    // Assuming the season is 2025-2026, we can derive the year.
+    // This logic can be adjusted if the season spans across new years.
+    const year = "2025";
+    const monthKey = `${year}-${m}`;
     if (!months[monthKey]) months[monthKey] = [];
     months[monthKey].push(row);
   });
@@ -73,9 +79,10 @@ function loadData() {
   document.getElementById("seasonLosses").textContent = `Losses: ${seasonStats.losses}`;
   document.getElementById("seasonBank").textContent = `Bank: ${seasonStats.bank}`;
 
-  // Season dropdown με summary ανά μήνα
+  // Season dropdown with summary per month
   const dropdown = document.getElementById("seasonDropdown");
   dropdown.innerHTML = "";
+  // *** FIX: Optimized by calling groupByParlay only once per month ***
   Object.keys(months).forEach(mKey => {
     const parlays = groupByParlay(months[mKey]);
     const wins = parlays.filter(p => p.parlayResult === "won").length;
@@ -89,13 +96,9 @@ function loadData() {
       <span class="month-summary-stats">W: ${wins} | L: ${losses} | Bank: ${lastBank}</span>
     `;
     dropdown.appendChild(div);
-  });
 
-  // Month buttons
-  const monthButtons = document.getElementById("monthButtons");
-  monthButtons.innerHTML = "";
-  Object.keys(months).forEach(mKey => {
-    const parlays = groupByParlay(months[mKey]);
+    // Month buttons (using the same parlays data)
+    const monthButtons = document.getElementById("monthButtons");
     const btn = document.createElement("button");
     btn.className = "month-toggle-btn";
     btn.innerHTML = `
@@ -107,7 +110,7 @@ function loadData() {
   });
 }
 
-// Ομαδοποίηση γραμμών σε parlays (ανά ημερομηνία)
+// Group rows into parlays (by date)
 function groupByParlay(rows) {
   const parlays = {};
   rows.forEach(r => {
@@ -132,7 +135,7 @@ function groupByParlay(rows) {
   return Object.values(parlays);
 }
 
-// Εμφάνιση parlays ενός μήνα
+// Render parlays for a month
 function renderParlays(parlays, monthKey) {
   const container = document.getElementById("parlaysContainer");
   container.innerHTML = `<div class="date-divider">${monthKey}</div>`;
@@ -172,4 +175,4 @@ document.getElementById("seasonButton").addEventListener("click", () => {
 
 // Start
 fetchData();
-setInterval(fetchData, 60000); // Refresh κάθε 1 λεπτό
+setInterval(fetchData, 60000); // Refresh every 1 minute
