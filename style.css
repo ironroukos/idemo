@@ -1,367 +1,75 @@
-/* *** FIX: Using CSS variables for easier theming *** */
-:root {
-  --primary-color: limegreen;
-  --background-color: black;
-  --text-color: white;
-  --lost-color: red;
-  --border-color-light: #333;
-  --border-color-hover: #555;
-  --font-special: 'Dancing Script', cursive;
-  --font-main: Arial, Helvetica, sans-serif;
-}
+body { background-color: var(--background-color); color: var(--text-color); font-family: var(--font-special); padding: 20px; }
 
-body {
-  background-color: var(--background-color);
-  color: var(--text-color);
-  font-family: var(--font-special);
-  padding: 20px;
-}
+h1 { color: var(--primary-color); font-size: 3em; text-align: center; margin-bottom: 20px; }
 
-h1 {
-  color: var(--primary-color);
-  font-size: 3em;
-  text-align: center;
-  margin-bottom: 20px;
-}
+h1, .month-toggle-btn, .season-btn { font-family: var(--font-special); }
 
-/* Headings: h1, season, month buttons */
-h1,
-.month-toggle-btn,
-.season-btn {
-  font-family: var(--font-special);
-}
+.month-toggle-btn, .season-btn { font-size: 2.2rem; background: transparent; color: var(--text-color); border: 2px solid var(--primary-color); border-radius: 20px; cursor: pointer; padding: 24px 32px; margin: 28px auto 16px auto; width: 97%; max-width: 700px; min-width: 340px; display: flex; flex-direction: row; justify-content: space-between; align-items: center; text-align: left; box-sizing: border-box; transition: background 0.2s, border 0.2s; flex-wrap: wrap; }
 
-/* --- Classic Month/Season Button Styles --- */
-.month-toggle-btn, .season-btn {
-  font-size: 2.2rem;
-  background: transparent;
-  color: var(--text-color);
-  border: 2px solid var(--primary-color);
-  border-radius: 20px;
-  cursor: pointer;
-  padding: 24px 32px;
-  margin: 28px auto 16px auto;
-  width: 97%;
-  max-width: 700px;
-  min-width: 340px;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  text-align: left;
-  box-sizing: border-box;
-  transition: background 0.2s, border 0.2s;
-  flex-wrap: wrap;
-}
+.month-toggle-btn:hover, .season-btn:hover { background: rgba(0,255,0,0.05); border-color: #55ff55; }
 
-.month-toggle-btn:hover,
-.season-btn:hover {
-  background: rgba(0,255,0,0.05);
-  border-color: #55ff55;
-}
+.month-name, .season-title { font-size: 2rem; font-family: var(--font-special); font-weight: normal; white-space: nowrap; margin-right: 18px; overflow-wrap: anywhere; }
 
-.month-name,
-.season-title {
-  font-size: 2rem;
-  font-family: var(--font-special);
-  font-weight: normal;
-  white-space: nowrap;
-  margin-right: 18px;
-  overflow-wrap: anywhere;
-}
+.month-stats, .season-stats { font-size: 1.25rem; font-family: var(--font-special); white-space: nowrap; margin-left: 18px; overflow-wrap: anywhere; }
 
-.month-stats,
-.season-stats {
-  font-size: 1.25rem;
-  font-family: var(--font-special);
-  white-space: nowrap;
-  margin-left: 18px;
-  overflow-wrap: anywhere;
-}
+.season-btn { cursor: pointer; pointer-events: auto; }
 
-.season-btn {
-  cursor: pointer;
-  pointer-events: auto;
-}
+.parlays-dropdown { background: #111; border-left: 2px solid var(--primary-color); border-radius: 0 0 12px 12px; padding: 16px 18px 19px 22px; }
 
-.parlays-dropdown {
-  background: #111;
-  border-left: 2px solid var(--primary-color);
-  border-radius: 0 0 12px 12px;
-  padding: 16px 18px 19px 22px;
-}
+.month-summary { border: 1px solid var(--border-color-light); padding: 12px 16px; margin: 8px 0; border-radius: 8px; background: rgba(0,0,0,0.3); display: flex; justify-content: space-between; align-items: center; transition: background 0.2s ease; }
 
-/* Monthly summary inside season dropdown */
-.month-summary {
-  border: 1px solid var(--border-color-light);
-  padding: 12px 16px;
-  margin: 8px 0;
-  border-radius: 8px;
-  background: rgba(0,0,0,0.3);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  transition: background 0.2s ease;
-}
+.month-summary:hover { background: rgba(0,0,0,0.5); border-color: var(--border-color-hover); }
 
-.month-summary:hover {
-  background: rgba(0,0,0,0.5);
-  border-color: var(--border-color-hover);
-}
+.month-summary-name { font-size: 1.3rem; font-family: var(--font-special); font-weight: bold; color: var(--primary-color); }
 
-.month-summary-name {
-  font-size: 1.3rem;
-  font-family: var(--font-special);
-  font-weight: bold;
-  color: var(--primary-color);
-}
+.month-summary-stats { font-size: 1.1rem; font-family: var(--font-main); white-space: nowrap; }
 
-.month-summary-stats {
-  font-size: 1.1rem;
-  font-family: var(--font-main);
-  white-space: nowrap;
-}
+@media (min-width: 800px) { #monthButtons { display: flex; flex-direction: column; align-items: center; } .month-toggle-btn, .season-btn, .parlays-dropdown, .parlay { max-width: 100%; min-width: unset; width: 100%; box-sizing: border-box; } }
 
-/* Center everything only for screens wider than 800px */
-@media (min-width: 800px) {
-  #monthButtons {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  .month-toggle-btn,
-  .season-btn,
-  .parlays-dropdown,
-  .parlay {
-    max-width: 100%;
-    min-width: unset;
-    width: 100%;
-    box-sizing: border-box;
-  }
-}
+.parlay-date, .total-odds, .parlay-result, .parlay .match { font-family: var(--font-main); font-size: 1.3rem; }
 
-/* Parlay and match details */
-.parlay-date,
-.total-odds,
-.parlay-result,
-.parlay .match {
-  font-family: var(--font-main);
-  font-size: 1.3rem;
-}
+.parlay .match { font-size: 1.15rem; }
 
-.parlay .match {
-  font-size: 1.15rem;
-}
+.parlay-date { font-weight: bold; margin-top: 15px; color: var(--text-color); }
 
-.parlay-date {
-  font-weight: bold;
-  margin-top: 15px;
-  color: var(--text-color);
-}
+.parlay { border: 2px solid; padding: 16px; margin: 14px 0; border-radius: 12px; display: block; }
 
-.parlay {
-  border: 2px solid;
-  padding: 16px;
-  margin: 14px 0;
-  border-radius: 12px;
-  display: block; /* Changed from none to block */
-}
+.parlay.won { border-color: var(--primary-color); }
 
-.parlay.won {
-  border-color: var(--primary-color);
-}
+.parlay.lost { border-color: var(--lost-color); }
 
-.parlay.lost {
-  border-color: var(--lost-color);
-}
+.parlay-meta { display: flex; justify-content: space-between; align-items: center; gap: .6rem; font-weight: bold; margin-bottom: 8px; text-align: center; }
 
-.parlay-meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: .6rem;
-  font-weight: bold;
-  margin-bottom: 8px;
-  text-align: center;
-}
+.total-odds, .parlay-result { font-family: var(--font-main); font-size: 1.2rem; }
 
-.total-odds, .parlay-result {
-  font-family: var(--font-main);
-  font-size: 1.2rem;
-}
+.parlay-result { color: var(--text-color); padding: 4px 8px; border-radius: 4px; background: rgba(255,255,255,0.1); }
 
-.parlay-result {
-  color: var(--text-color);
-  padding: 4px 8px;
-  border-radius: 4px;
-  background: rgba(255,255,255,0.1);
-}
+.match { display: flex; justify-content: space-between; align-items: center; margin: 8px 0; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
 
-/* Enhanced match display */
-.match {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin: 8px 0;
-  padding: 8px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
-}
+.match:last-child { border-bottom: none; }
 
-.match:last-child {
-  border-bottom: none;
-}
+.match-info { flex: 1; }
 
-.match-info {
-  flex: 1;
-}
+.match-name { font-weight: bold; margin-bottom: 4px; font-size: 1.1rem; }
 
-.match-name {
-  font-weight: bold;
-  margin-bottom: 4px;
-  font-size: 1.1rem;
-}
+.match-details { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 0.95rem; }
 
-.match-details {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  flex-wrap: wrap;
-  font-size: 0.95rem;
-}
+.prediction { color: #ccc; background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 3px; }
 
-.prediction {
-  color: #ccc;
-  background: rgba(255,255,255,0.1);
-  padding: 2px 6px;
-  border-radius: 3px;
-}
+.match-result { color: #aaa; font-style: italic; }
 
-.match-result {
-  color: #aaa;
-  font-style: italic;
-}
+.prediction-result { padding: 2px 6px; border-radius: 3px; font-weight: bold; font-size: 0.9rem; }
 
-.prediction-result {
-  padding: 2px 6px;
-  border-radius: 3px;
-  font-weight: bold;
-  font-size: 0.9rem;
-}
+.prediction-result.won { color: var(--primary-color); background: rgba(0,255,0,0.1); }
 
-.prediction-result.won {
-  color: var(--primary-color);
-  background: rgba(0,255,0,0.1);
-}
+.prediction-result.lost { color: var(--lost-color); background: rgba(255,0,0,0.1); }
 
-.prediction-result.lost {
-  color: var(--lost-color);
-  background: rgba(255,0,0,0.1);
-}
+.odds { font-weight: bold; font-size: 1.1rem; color: gold; margin-left: 12px; }
 
-.odds {
-  font-weight: bold;
-  font-size: 1.1rem;
-  color: gold;
-  margin-left: 12px;
-}
+.date-divider { text-align: center; font-size: 1.4rem; font-weight: bold; margin: 20px 0 10px 0; color: var(--text-color); border-bottom: 2px solid var(--border-color-light); padding-bottom: 4px; }
 
-.date-divider {
-  text-align: center;
-  font-size: 1.4rem;
-  font-weight: bold;
-  margin: 20px 0 10px 0;
-  color: var(--text-color);
-  border-bottom: 2px solid var(--border-color-light);
-  padding-bottom: 4px;
-}
+.error-message { background: #ff4444; color: var(--text-color); padding: 15px; border-radius: 8px; margin: 20px 0; text-align: center; font-family: var(--font-main); }
 
-.error-message {
-  background: #ff4444;
-  color: var(--text-color);
-  padding: 15px;
-  border-radius: 8px;
-  margin: 20px 0;
-  text-align: center;
-  font-family: var(--font-main);
-}
+.debug-info { background: var(--border-color-light); color: #ccc; padding: 10px; border-radius: 5px; margin: 10px 0; font-family: monospace; font-size: 0.9rem; white-space: pre-wrap; }
 
-.debug-info {
-  background: var(--border-color-light);
-  color: #ccc;
-  padding: 10px;
-  border-radius: 5px;
-  margin: 10px 0;
-  font-family: monospace;
-  font-size: 0.9rem;
-  white-space: pre-wrap;
-}
-
-/* Mobile responsive styles */
-@media (max-width: 600px) {
-  body {
-    padding: 10px;
-  }
-
-  h1 {
-    font-size: 2em;
-    margin-bottom: 10px;
-  }
-
-  .season-btn,
-  .month-toggle-btn {
-    font-size: 1.1rem;
-    padding: 12px 16px;
-    border-radius: 16px;
-    margin: 12px 0;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    min-width: unset;
-    max-width: 100%;
-  }
-
-  .season-title,
-  .month-name {
-    font-size: 1.2rem;
-    margin: 0 0 8px 0;
-  }
-
-  .season-stats,
-  .month-stats {
-    font-size: 1rem;
-    margin: 8px 0 0 0;
-  }
-
-  .parlays-dropdown {
-    padding: 10px 12px;
-  }
-
-  .parlay {
-    padding: 12px;
-    margin: 10px 0;
-  }
-
-  .parlay-meta {
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .match {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-
-  .match-name {
-    font-size: 1rem;
-  }
-
-  .match-details {
-    font-size: 0.9rem;
-  }
-
-  .odds {
-    align-self: flex-end;
-    margin-left: 0;
-  }
-}
+@media (max-width: 600px) { body { padding: 10px; } h1 { font-size: 2em; margin-bottom: 10px; } .season-btn, .month-toggle-btn { font-size: 1.1rem; padding: 12px 16px; border-radius: 16px; margin: 12px 0; flex-direction: column; align-items: center; text-align: center; min-width: unset; max-width: 100%; } .season-title, .month-name { font-size: 1.2rem; margin: 0 0 8px 0; } .season-stats, .month-stats { font-size: 1rem; margin: 8px 0 0 0; } .parlays-dropdown { padding: 10px 12px; } .parlay { padding: 12px; margin: 10px 0; } .parlay-meta { flex-direction: column; gap: 8px; } .match { flex-direction: column; align-items: flex-start; gap: 8px; } .match-name { font-size: 1rem; } .match-details { font-size: 0.9rem; } .odds { align-self: flex-end; margin-left: 0; } }
