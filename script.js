@@ -1,167 +1,148 @@
-// ==============================
-//  Betting Tracker (Season 25/26)
-// ==============================
-
-// 🔹 Google Sheet settings
-const sheetID = "1hqgI3ZtPxQfSTA9y5w3jBmedTZP7sqlMGIVqm4mqZB8";
+// === CONFIG ===
+const sheetID = "1hqgI3ZtPxQfSTA9y5w3jBmedTZP7sqlMGIVqm4mqZB8";  
 const SHEET_NAME = "season 2025/2026";
-
-// 🔹 Construct CSV URL
 const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEET_NAME)}`;
 
-// ==============================
-//  Globals
-// ==============================
-let rawData = [];
 let csvData = "";
-const START_BANK = 500;
-const SEASON_START_YEAR = 2025;
 
-// ==============================
-//  Utility functions
-// ==============================
+// Debug helper
 function debug(msg) {
-  console.log(`[DEBUG] ${msg}`);
-}
-
-// Parse CSV
-function parseCSV(csvText) {
-  const lines = csvText.split('\n');
-  const headers = lines[0].split(',');
-  const data = [];
-
-  debug(`CSV has ${lines.length} lines with headers: ${headers.join(', ')}`);
-
-  for (let i = 1; i < lines.length; i++) {
-    if (lines[i].trim()) {
-      const values = lines[i].split(',');
-      const row = {};
-      headers.forEach((header, index) => {
-        row[header.trim()] = values[index] ? values[index].trim() : '';
-      });
-      data.push(row);
-    }
+  const consoleDiv = document.getElementById("debugConsole");
+  if (consoleDiv) {
+    consoleDiv.style.display = "block";
+    consoleDiv.textContent += msg + "\n";
   }
-  debug(`Parsed ${data.length} data rows`);
-  return data;
+  console.log(msg);
 }
 
-// Parse date dd/mm → Date
-function parseDate(ddmm) {
-  if (!ddmm) return null;
-  const [day, month] = ddmm.split('/');
-  if (!day || !month) return null;
-  const m = parseInt(month, 10);
-  const y = m >= 8 ? SEASON_START_YEAR : SEASON_START_YEAR + 1;
-  return new Date(`${y}-${String(m).padStart(2, '0')}-${String(day).padStart(2, '0')}`);
-}
-
-// ==============================
-//  Main Load Function
-// ==============================
-function loadData() {
-  try {
-    debug('Starting to load CSV data...');
-    const parsedData = parseCSV(csvData);
-
-    let lastNonEmpty = {
-      Date: null, Match: null, 'Match Result': null, Pick: null,
-      'Pick Result': null, Odds: null, 'Parlay Odds': null,
-      'Parlay Result': null, Bank: null
-    };
-
-    rawData = parsedData.map(row => {
-      const obj = {
-        date: row['Date'] || lastNonEmpty.Date,
-        match: row['Match'] || lastNonEmpty.Match,
-        matchResult: row['Match Result'] || lastNonEmpty['Match Result'],
-        prediction: row['Pick'] || lastNonEmpty.Pick,
-        predictionResult: row['Pick Result'] || lastNonEmpty['Pick Result'],
-        odds: row['Odds'] || lastNonEmpty.Odds,
-        parlayOdds: row['Parlay Odds'] || lastNonEmpty['Parlay Odds'],
-        parlayResult: row['Parlay Result'] || lastNonEmpty['Parlay Result'],
-        bank: row['Bank'] || lastNonEmpty.Bank
-      };
-
-      // Update lastNonEmpty
-      Object.keys(obj).forEach(k => {
-        const originalKey = k === 'date' ? 'Date' :
-          k === 'match' ? 'Match' :
-          k === 'matchResult' ? 'Match Result' :
-          k === 'prediction' ? 'Pick' :
-          k === 'predictionResult' ? 'Pick Result' :
-          k === 'odds' ? 'Odds' :
-          k === 'parlayOdds' ? 'Parlay Odds' :
-          k === 'parlayResult' ? 'Parlay Result' :
-          k === 'bank' ? 'Bank' : k;
-
-        if (obj[k] !== null && obj[k] !== undefined && obj[k] !== '') {
-          lastNonEmpty[originalKey] = obj[k];
-        }
-      });
-      return obj;
-    }).filter(r => r.date && r.match && r.prediction && r.odds);
-
-    debug(`Filtered data: ${rawData.length} valid rows`);
-    populateSeasonAndMonths();
-
-  } catch (err) {
-    debug(`Error loading data: ${err.message}`);
-    console.error("Error loading data", err);
-  }
-}
-
-// ==============================
-//  Populate Season & Months
-// ==============================
-function populateSeasonAndMonths() {
-  debug('Populating season and months...');
-
-  const parlaysByMonth = {};
-  const monthDates = {};
-
-  rawData.forEach(item => {
-    const jsDate = parseDate(item.date);
-    if (!jsDate) return;
-    const month = jsDate.toLocaleString('default', { month: 'long' });
-
-    if (!parlaysByMonth[month]) parlaysByMonth[month] = {};
-    if (!parlaysByMonth[month][item.date]) parlaysByMonth[month][item.date] = {};
-    if (!parlaysByMonth[month][item.date][item.parlayOdds])
-      parlaysByMonth[month][item.date][item.parlayOdds] = [];
-
-    parlaysByMonth[month][item.date][item.parlayOdds].push(item);
-
-    if (!monthDates[month] || jsDate > monthDates[month]) {
-      monthDates[month] = jsDate;
-    }
-  });
-
-  debug(`Grouped into months: ${Object.keys(parlaysByMonth).join(', ')}`);
-
-  // 🔹 υπολογισμοί season + months (όπως έχεις ήδη)
-  // εδώ μπορείς να κρατήσεις το ίδιο code block από την προηγούμενη version σου
-  // που φτιάχνει Season stats, monthly stats & UI
-}
-
-// ==============================
-//  Fetch Data
-// ==============================
+// Fetch CSV από Google Sheets
 async function fetchData() {
   try {
-    debug("Fetching CSV from Google Sheets...");
+    debug("Fetching CSV...");
     const response = await fetch(csvUrl);
-    if (!response.ok) throw new Error(`HTTP error! ${response.status}`);
-    csvData = await response.text();
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const text = await response.text();
+    csvData = text;
     loadData();
   } catch (err) {
-    debug(`Fetch error: ${err.message}`);
-    console.error("Fetch error", err);
+    debug("Fetch error: " + err.message);
   }
 }
 
-// ==============================
-//  Init
-// ==============================
+// Parse CSV σε array
+function parseCSV(str) {
+  const rows = str.trim().split("\n").map(r => r.split(","));
+  const headers = rows[0].map(h => h.trim());
+  return rows.slice(1).map(row => {
+    let obj = {};
+    headers.forEach((h, i) => {
+      obj[h] = row[i] ? row[i].trim() : "";
+    });
+    return obj;
+  });
+}
+
+// === LOAD DATA ===
+function loadData() {
+  if (!csvData) return;
+
+  const data = parseCSV(csvData);
+
+  const seasonStats = { wins: 0, losses: 0, bank: 0 };
+  const months = {};
+
+  data.forEach(row => {
+    const date = row.Date || "";
+    const result = row.Result || "";
+    const profit = parseFloat(row.Profit || "0") || 0;
+
+    // Στατιστικά Season
+    if (result.toLowerCase() === "won") seasonStats.wins++;
+    if (result.toLowerCase() === "lost") seasonStats.losses++;
+    seasonStats.bank += profit;
+
+    // Group ανά μήνα
+    const [d, m, y] = date.split("/"); // Format dd/mm/yyyy
+    const monthKey = `${y}-${m}`;
+    if (!months[monthKey]) {
+      months[monthKey] = { parlays: [], wins: 0, losses: 0, bank: 0 };
+    }
+    months[monthKey].parlays.push(row);
+    if (result.toLowerCase() === "won") months[monthKey].wins++;
+    if (result.toLowerCase() === "lost") months[monthKey].losses++;
+    months[monthKey].bank += profit;
+  });
+
+  // Ενημέρωση Season Button
+  document.getElementById("seasonWins").textContent = `Wins: ${seasonStats.wins}`;
+  document.getElementById("seasonLosses").textContent = `Losses: ${seasonStats.losses}`;
+  document.getElementById("seasonBank").textContent = `Bank: ${seasonStats.bank.toFixed(2)}`;
+
+  // Εμφάνιση μηνιαίων στα Season Dropdown
+  const dropdown = document.getElementById("seasonDropdown");
+  dropdown.innerHTML = "";
+  Object.keys(months).forEach(mKey => {
+    const m = months[mKey];
+    const div = document.createElement("div");
+    div.className = "month-summary";
+    div.innerHTML = `
+      <span class="month-summary-name">${mKey}</span>
+      <span class="month-summary-stats">Wins: ${m.wins} | Losses: ${m.losses} | Bank: ${m.bank.toFixed(2)}</span>
+    `;
+    dropdown.appendChild(div);
+  });
+
+  // Εμφάνιση κουμπιών μηνών
+  const monthButtons = document.getElementById("monthButtons");
+  monthButtons.innerHTML = "";
+  Object.keys(months).forEach(mKey => {
+    const btn = document.createElement("button");
+    btn.className = "month-toggle-btn";
+    btn.innerHTML = `
+      <span class="month-name">${mKey}</span>
+      <span class="month-stats">Wins: ${months[mKey].wins} | Losses: ${months[mKey].losses} | Bank: ${months[mKey].bank.toFixed(2)}</span>
+    `;
+    btn.addEventListener("click", () => toggleMonth(mKey, months[mKey].parlays));
+    monthButtons.appendChild(btn);
+  });
+}
+
+// Εμφάνιση Parlays ενός μήνα
+function toggleMonth(monthKey, parlays) {
+  const container = document.getElementById("parlaysContainer");
+  container.innerHTML = `<div class="date-divider">${monthKey}</div>`;
+  parlays.forEach(p => {
+    const div = document.createElement("div");
+    div.className = `parlay ${p.Result.toLowerCase()}`;
+    div.innerHTML = `
+      <div class="parlay-meta">
+        <span class="parlay-date">${p.Date}</span>
+        <span class="total-odds">Odds: ${p.Odds}</span>
+        <span class="parlay-result">${p.Result}</span>
+      </div>
+      <div class="match">
+        <div class="match-info">
+          <div class="match-name">${p.Match}</div>
+          <div class="match-details">
+            <span class="prediction">${p.Prediction}</span>
+            <span class="match-result">${p.Result}</span>
+            <span class="prediction-result ${p.Result.toLowerCase()}">${p.Result}</span>
+            <span class="odds">${p.Odds}</span>
+          </div>
+        </div>
+      </div>
+    `;
+    div.classList.add("show");
+    container.appendChild(div);
+  });
+}
+
+// Toggle season dropdown
+document.getElementById("seasonButton").addEventListener("click", () => {
+  const dropdown = document.getElementById("seasonDropdown");
+  dropdown.style.display = dropdown.style.display === "none" ? "block" : "none";
+});
+
+// Start
 fetchData();
-setInterval(fetchData, 60000); // auto-refresh 60s
+setInterval(fetchData, 60000); // Refresh κάθε 1 λεπτό
