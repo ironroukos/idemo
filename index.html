@@ -1,41 +1,38 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>4Bet | Road to Profit</title>
-<!-- Google Fonts: Dancing Script -->
-<link href="https://fonts.googleapis.com/css2?family=Dancing+Script&display=swap" rel="stylesheet">
-<!-- CSS -->
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>4Bet | Road to Profit</title>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<h1>4Bet | Road to Profit</h1>
+  <h1>4Bet | Road to Profit</h1>
 
-<!-- Debug Console -->
-<div id="debugConsole" class="debug-info" style="display: none;"></div>
+  <!-- Debug Console -->
+  <div id="debugConsole" class="debug-info" style="display: none;"></div>
 
-<!-- Season Stats Button with Dropdown -->
-<button class="season-btn" id="seasonButton">
-  <span class="season-title">Season 2025/2026</span>
-  <span class="season-stats">
-    <span id="seasonWins">Wins: Loading...</span> | 
-    <span id="seasonLosses">Losses: Loading...</span> | 
-    <span id="seasonBank">Bank: Loading...</span>
-  </span>
-</button>
+  <!-- Season Button -->
+  <button class="season-btn" id="seasonButton">
+    <span class="season-title">Season 2025/2026</span>
+    <span class="season-stats">
+      <span id="seasonWins">Wins: Loading...</span> | 
+      <span id="seasonLosses">Losses: Loading...</span> | 
+      <span id="seasonBank">Bank: Loading...</span>
+    </span>
+  </button>
 
-<!-- Season Dropdown (Monthly Summary) -->
-<div id="seasonDropdown" class="parlays-dropdown" style="display: none;">
-  <!-- Monthly stats will be populated here -->
-</div>
+  <!-- Dropdown με μηνιαία σύνοψη -->
+  <div id="seasonDropdown" class="parlays-dropdown" style="display: none;"></div>
 
-<!-- Month buttons -->
-<div id="monthButtons"></div>
-<!-- Parlays container -->
-<div id="parlaysContainer"></div>
+  <!-- Μήνες -->
+  <div id="monthButtons"></div>
 
-<!-- JS -->
-<script src="script.js"></script>
+  <!-- Parlays -->
+  <div id="parlaysContainer"></div>
+
+  <script src="script.js"></script>
 </body>
 </html>
