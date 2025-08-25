@@ -45,94 +45,121 @@ function parseCSV(str) {
 // === LOAD DATA ===
 function loadData() {
   if (!csvData) return;
-
   const data = parseCSV(csvData);
 
   const seasonStats = { wins: 0, losses: 0, bank: 0 };
   const months = {};
 
+  // Group ανά μήνα και parlay
   data.forEach(row => {
-    const date = row.Date || "";
-    const result = row.Result || "";
-    const profit = parseFloat(row.Profit || "0") || 0;
+    const date = row["Date"] || "";
+    const result = row["Parlay Result"] || "";
+    const bank = parseFloat(row["Bank"] || "0") || 0;
 
-    // Στατιστικά Season
+    // Season stats
     if (result.toLowerCase() === "won") seasonStats.wins++;
     if (result.toLowerCase() === "lost") seasonStats.losses++;
-    seasonStats.bank += profit;
+    seasonStats.bank = bank; // πάντα κρατάει το τελευταίο bank
 
-    // Group ανά μήνα
-    const [d, m, y] = date.split("/"); // Format dd/mm/yyyy
+    // Μήνας (date format dd/mm/yyyy)
+    const [d, m, y] = date.split("/");
     const monthKey = `${y}-${m}`;
-    if (!months[monthKey]) {
-      months[monthKey] = { parlays: [], wins: 0, losses: 0, bank: 0 };
-    }
-    months[monthKey].parlays.push(row);
-    if (result.toLowerCase() === "won") months[monthKey].wins++;
-    if (result.toLowerCase() === "lost") months[monthKey].losses++;
-    months[monthKey].bank += profit;
+    if (!months[monthKey]) months[monthKey] = [];
+    months[monthKey].push(row);
   });
 
-  // Ενημέρωση Season Button
+  // Update season button
   document.getElementById("seasonWins").textContent = `Wins: ${seasonStats.wins}`;
   document.getElementById("seasonLosses").textContent = `Losses: ${seasonStats.losses}`;
-  document.getElementById("seasonBank").textContent = `Bank: ${seasonStats.bank.toFixed(2)}`;
+  document.getElementById("seasonBank").textContent = `Bank: ${seasonStats.bank}`;
 
-  // Εμφάνιση μηνιαίων στα Season Dropdown
+  // Season dropdown με summary ανά μήνα
   const dropdown = document.getElementById("seasonDropdown");
   dropdown.innerHTML = "";
   Object.keys(months).forEach(mKey => {
-    const m = months[mKey];
+    const parlays = groupByParlay(months[mKey]);
+    const wins = parlays.filter(p => p.parlayResult === "won").length;
+    const losses = parlays.filter(p => p.parlayResult === "lost").length;
+    const lastBank = parlays.length ? parlays[parlays.length - 1].bank : "-";
+
     const div = document.createElement("div");
     div.className = "month-summary";
     div.innerHTML = `
       <span class="month-summary-name">${mKey}</span>
-      <span class="month-summary-stats">Wins: ${m.wins} | Losses: ${m.losses} | Bank: ${m.bank.toFixed(2)}</span>
+      <span class="month-summary-stats">W: ${wins} | L: ${losses} | Bank: ${lastBank}</span>
     `;
     dropdown.appendChild(div);
   });
 
-  // Εμφάνιση κουμπιών μηνών
+  // Month buttons
   const monthButtons = document.getElementById("monthButtons");
   monthButtons.innerHTML = "";
   Object.keys(months).forEach(mKey => {
+    const parlays = groupByParlay(months[mKey]);
     const btn = document.createElement("button");
     btn.className = "month-toggle-btn";
     btn.innerHTML = `
       <span class="month-name">${mKey}</span>
-      <span class="month-stats">Wins: ${months[mKey].wins} | Losses: ${months[mKey].losses} | Bank: ${months[mKey].bank.toFixed(2)}</span>
+      <span class="month-stats">Parlays: ${parlays.length}</span>
     `;
-    btn.addEventListener("click", () => toggleMonth(mKey, months[mKey].parlays));
+    btn.addEventListener("click", () => renderParlays(parlays, mKey));
     monthButtons.appendChild(btn);
   });
 }
 
-// Εμφάνιση Parlays ενός μήνα
-function toggleMonth(monthKey, parlays) {
+// Ομαδοποίηση γραμμών σε parlays (ανά ημερομηνία)
+function groupByParlay(rows) {
+  const parlays = {};
+  rows.forEach(r => {
+    const key = r["Date"];
+    if (!parlays[key]) {
+      parlays[key] = {
+        date: r["Date"],
+        matches: [],
+        parlayOdds: r["Parlay Odds"],
+        parlayResult: r["Parlay Result"]?.toLowerCase(),
+        bank: r["Bank"]
+      };
+    }
+    parlays[key].matches.push({
+      match: r["Match"],
+      matchResult: r["Match Result"],
+      pick: r["Pick"],
+      pickResult: r["Pick Result"],
+      odds: r["Odds"]
+    });
+  });
+  return Object.values(parlays);
+}
+
+// Εμφάνιση parlays ενός μήνα
+function renderParlays(parlays, monthKey) {
   const container = document.getElementById("parlaysContainer");
   container.innerHTML = `<div class="date-divider">${monthKey}</div>`;
+
   parlays.forEach(p => {
     const div = document.createElement("div");
-    div.className = `parlay ${p.Result.toLowerCase()}`;
+    div.className = `parlay ${p.parlayResult}`;
     div.innerHTML = `
       <div class="parlay-meta">
-        <span class="parlay-date">${p.Date}</span>
-        <span class="total-odds">Odds: ${p.Odds}</span>
-        <span class="parlay-result">${p.Result}</span>
+        <span class="parlay-date">${p.date}</span>
+        <span class="total-odds">Total Odds: ${p.parlayOdds}</span>
+        <span class="parlay-result">${p.parlayResult}</span>
       </div>
-      <div class="match">
-        <div class="match-info">
-          <div class="match-name">${p.Match}</div>
-          <div class="match-details">
-            <span class="prediction">${p.Prediction}</span>
-            <span class="match-result">${p.Result}</span>
-            <span class="prediction-result ${p.Result.toLowerCase()}">${p.Result}</span>
-            <span class="odds">${p.Odds}</span>
+      ${p.matches.map(m => `
+        <div class="match">
+          <div class="match-info">
+            <div class="match-name">${m.match}</div>
+            <div class="match-details">
+              <span class="match-result">${m.matchResult}</span>
+              <span class="prediction">Pick: ${m.pick}</span>
+              <span class="prediction-result ${m.pickResult.toLowerCase()}">${m.pickResult}</span>
+              <span class="odds">${m.odds}</span>
+            </div>
           </div>
         </div>
-      </div>
+      `).join("")}
     `;
-    div.classList.add("show");
     container.appendChild(div);
   });
 }
