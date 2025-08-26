@@ -15,7 +15,7 @@
   <h1>4Bet | Road to Profit</h1>
 
   <!-- Season Stats Button with Dropdown -->
-  <button class="season-btn" id="seasonButton">
+  <button class="season-btn" id="seasonButton" aria-expanded="false">
     <span class="season-title">Season 2025/2026</span>
     <div>
       <span class="season-stats">
@@ -27,13 +27,10 @@
   </button>
 
   <!-- Season Dropdown (Monthly Summary) -->
-  <div id="seasonDropdown" class="parlays-dropdown" style="display: none;"></div>
+  <div id="seasonDropdown" class="parlays-dropdown"></div>
 
-  <!-- Month buttons -->
+  <!-- Month buttons container -->
   <div id="monthButtons"></div>
-
-  <!-- Parlays container -->
-  <div id="parlaysContainer"></div>
 
   <!-- JS -->
   <script src="script.js"></script>
