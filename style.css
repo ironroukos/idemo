@@ -148,18 +148,19 @@ h1 {
   font-size: 0.9rem;
 }
 
-/* Parlay cards */
+/* Parlay cards - Betting slip style */
 .parlay {
-  border: 2px solid;
-  border-radius: 12px;
-  padding: 16px;
-  margin: 12px 0;
+  border: 3px solid;
+  border-radius: 16px;
+  padding: 0;
+  margin: 16px 0;
   display: none;
   transition: all 0.3s ease;
-  background: linear-gradient(135deg, #111 0%, #1a1a1a 100%);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  background: #1a1a1a;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
   position: relative;
   overflow: hidden;
+  min-height: 200px;
 }
 
 .parlay.show { 
@@ -180,33 +181,46 @@ h1 {
 
 .parlay.won { 
   border-color: limegreen;
-  background: linear-gradient(135deg, #111 0%, #0d2818 100%);
+  background: linear-gradient(135deg, #1a1a1a 0%, #0f2f0f 100%);
 }
 
 .parlay.lost { 
-  border-color: red;
-  background: linear-gradient(135deg, #111 0%, #2d1010 100%);
+  border-color: #ff4444;
+  background: linear-gradient(135deg, #1a1a1a 0%, #2f0f0f 100%);
 }
 
-/* Add a subtle pattern for won/lost */
-.parlay.won::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, transparent 0%, limegreen 50%, transparent 100%);
+/* Header section of parlay slip */
+.parlay-header {
+  background: linear-gradient(135deg, #333 0%, #222 100%);
+  padding: 12px 16px;
+  border-bottom: 2px solid #444;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.parlay.lost::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, transparent 0%, red 50%, transparent 100%);
+.parlay.won .parlay-header {
+  background: linear-gradient(135deg, limegreen 0%, #32cd32 100%);
+  color: black;
+}
+
+.parlay.lost .parlay-header {
+  background: linear-gradient(135deg, #ff4444 0%, #cc3333 100%);
+  color: white;
+}
+
+/* Body section with matches */
+.parlay-body {
+  padding: 16px;
+}
+
+/* Footer section with total odds */
+.parlay-footer {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 12px 16px;
+  border-top: 1px solid #444;
+  text-align: center;
+  font-weight: bold;
 }
 
 /* Parlay meta (date + total odds) */
@@ -238,51 +252,82 @@ h1 {
   color: limegreen;
 }
 
-/* Match inside parlay */
+/* Match inside parlay - betting slip style */
 .parlay .match {
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-family: Arial, Helvetica, sans-serif;
-  font-size: 1.15rem;
+  font-size: 1rem;
   margin: 8px 0;
-  padding: 8px 12px;
+  padding: 12px;
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.08);
   transition: all 0.2s ease;
-  border-left: 3px solid transparent;
+  border-left: 4px solid #666;
+  min-height: 60px;
 }
 
 .parlay .match:hover {
-  background: rgba(255, 255, 255, 0.1);
-  transform: translateX(5px);
+  background: rgba(255, 255, 255, 0.12);
+  transform: translateX(3px);
 }
 
 .parlay .match.won { 
   color: limegreen;
   border-left-color: limegreen;
-  background: rgba(0, 255, 0, 0.1);
+  background: rgba(0, 255, 0, 0.12);
 }
 
 .parlay .match.lost { 
   color: #ff6b6b;
   border-left-color: #ff6b6b;
-  background: rgba(255, 0, 0, 0.1);
+  background: rgba(255, 0, 0, 0.12);
 }
 
-/* Match details */
-.match span:first-child {
+/* Match content layout */
+.match-info {
   flex: 1;
-  margin-right: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.match span:last-child {
+.match-teams {
   font-weight: bold;
-  padding: 2px 8px;
+  font-size: 1.1rem;
+}
+
+.match-pick {
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+.match-result {
+  font-size: 0.85rem;
+  font-weight: bold;
+  color: #ccc;
+}
+
+.match-odds {
+  font-weight: bold;
+  padding: 8px 12px;
   background: rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
+  border-radius: 6px;
   min-width: 50px;
   text-align: center;
+  font-size: 1.1rem;
+  align-self: center;
+}
+
+.parlay.won .match-odds {
+  background: rgba(0, 255, 0, 0.2);
+  color: limegreen;
+}
+
+.parlay.lost .match-odds {
+  background: rgba(255, 0, 0, 0.2);
+  color: #ff6b6b;
 }
 
 /* Loading states */
@@ -310,7 +355,7 @@ h1 {
   padding: 10px;
 }
 
-/* Responsive adjustments */
+/* Responsive adjustments for new parlay design */
 @media (max-width: 768px) {
   body { padding: 15px; }
   
@@ -354,32 +399,47 @@ h1 {
   }
   
   .parlay { 
-    padding: 12px 8px; 
-    margin: 8px 0; 
-    border-radius: 10px; 
+    margin: 12px 0; 
+    border-radius: 12px;
+    min-height: 180px;
+  }
+  
+  .parlay-header {
+    padding: 10px 12px;
+    flex-direction: column;
+    gap: 4px;
+    text-align: center;
+  }
+  
+  .parlay-body {
+    padding: 12px;
   }
   
   .parlay .match { 
-    font-size: 1rem; 
     flex-direction: column; 
-    align-items: flex-start; 
-    gap: 4px;
-    padding: 6px 8px;
+    align-items: stretch;
+    gap: 8px;
+    padding: 10px;
+    min-height: 80px;
   }
   
-  .match span:last-child {
-    align-self: flex-end;
-    margin-top: 4px;
+  .match-info {
+    text-align: left;
   }
   
-  .parlay-meta { 
-    flex-direction: column; 
-    gap: 4px; 
-  }
-  
-  .parlay-date, .total-odds { 
+  .match-teams {
     font-size: 1rem;
-    padding: 2px 6px;
+  }
+  
+  .match-pick, .match-result {
+    font-size: 0.85rem;
+  }
+  
+  .match-odds {
+    align-self: center;
+    margin-top: 8px;
+    font-size: 1rem;
+    padding: 6px 10px;
   }
 
   .month-summary {
