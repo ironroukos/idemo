@@ -1,6 +1,6 @@
 // 🔹 Google Sheet ID (ένα μόνο φύλλο: season 2025/2026)
-const sheetID = "2PACX-1vSbcPcRbgUdW1O-TF-kKKFERDDZKZudEyaQ8w6oewMpSNnFIyfrhKxF1tL96f3mfpzFISvgabB3qUpu";
-const SHEET_NAME = "Season 2025-2026"; // default sheet name
+const sheetID = "1hqgI3ZtPxQfSTA9y5w3jBmedTZP7sqlMGIVqm4mqZB8";
+const SHEET_NAME = "season 2025/2026";
 
 // 🔹 Array to store all data from the sheet
 let rawData = [];
@@ -344,29 +344,21 @@ function renderParlaysForMonth(monthData, container) {
         const dateStr = jsDate ? jsDate.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit' }) : "??/??";
 
         parlayDiv.innerHTML = `
-          <div class="parlay-header">
+          <div class="parlay-meta">
             <span class="parlay-date">${dateStr}</span>
-            <span class="parlay-status">${parlayResult === "won" ? "WON" : "LOST"}</span>
-          </div>
-          <div class="parlay-body">
-            ${parlay.map(m => {
-              const pickResult = (m.pickResult || "").toLowerCase();
-              const pickClass = pickResult === "won" ? "won" : (pickResult === "lost" ? "lost" : "");
-              return `
-                <div class="match ${pickClass}">
-                  <div class="match-info">
-                    <div class="match-teams">${m.match}</div>
-                    <div class="match-pick">Pick: ${m.pick}</div>
-                    <div class="match-result">Result: ${m.matchResult || "N/A"}</div>
-                  </div>
-                  <div class="match-odds">${m.odds}</div>
-                </div>
-              `;
-            }).join('')}
-          </div>
-          <div class="parlay-footer">
+            <span class="sep">•</span>
             <span class="total-odds">Total Odds: ${parlayOdds || "N/A"}</span>
           </div>
+          ${parlay.map(m => {
+            const pickResult = (m.pickResult || "").toLowerCase();
+            const pickClass = pickResult === "won" ? "won" : (pickResult === "lost" ? "lost" : "");
+            return `
+              <div class="match ${pickClass}">
+                <span>${m.match} (${m.pick}) - Result: ${m.matchResult || "N/A"}</span>
+                <span>${m.odds}</span>
+              </div>
+            `;
+          }).join('')}
         `;
 
         container.appendChild(parlayDiv);
