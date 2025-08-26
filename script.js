@@ -344,21 +344,29 @@ function renderParlaysForMonth(monthData, container) {
         const dateStr = jsDate ? jsDate.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit' }) : "??/??";
 
         parlayDiv.innerHTML = `
-          <div class="parlay-meta">
+          <div class="parlay-header">
             <span class="parlay-date">${dateStr}</span>
-            <span class="sep">•</span>
+            <span class="parlay-status">${parlayResult === "won" ? "WON" : "LOST"}</span>
+          </div>
+          <div class="parlay-body">
+            ${parlay.map(m => {
+              const pickResult = (m.pickResult || "").toLowerCase();
+              const pickClass = pickResult === "won" ? "won" : (pickResult === "lost" ? "lost" : "");
+              return `
+                <div class="match ${pickClass}">
+                  <div class="match-info">
+                    <div class="match-teams">${m.match}</div>
+                    <div class="match-pick">Pick: ${m.pick}</div>
+                    <div class="match-result">Result: ${m.matchResult || "N/A"}</div>
+                  </div>
+                  <div class="match-odds">${m.odds}</div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+          <div class="parlay-footer">
             <span class="total-odds">Total Odds: ${parlayOdds || "N/A"}</span>
           </div>
-          ${parlay.map(m => {
-            const pickResult = (m.pickResult || "").toLowerCase();
-            const pickClass = pickResult === "won" ? "won" : (pickResult === "lost" ? "lost" : "");
-            return `
-              <div class="match ${pickClass}">
-                <span>${m.match} (${m.pick}) - Result: ${m.matchResult || "N/A"}</span>
-                <span>${m.odds}</span>
-              </div>
-            `;
-          }).join('')}
         `;
 
         container.appendChild(parlayDiv);
