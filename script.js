@@ -1,98 +1,57 @@
-// 🔹 Google Sheet ID (ένα μόνο φύλλο: season 2025/2026)
-const sheetID = "1hqgI3ZtPxQfSTA9y5w3jBmedTZP7sqlMGIVqm4mqZB8";
-const SHEET_NAME = "season 2025/2026";
+// 🔹 Google Sheet ID & sheet
+const sheetID = "2PACX-1vSbcPcRbgUdW1O-TF-kKKFERDDZKZudEyaQ8w6oewMpSNnFIyfrhKxF1tL96f3mfpzFISvgabB3qUpu";
+const SHEET_NAME = "season 2025-2026"; // default sheet name
 
-// 🔹 Array to store all data from the sheet
+// 🔹 Store data
 let rawData = [];
-
-// 🔹 Starting bank (set to 0 for pure profit/loss tracking)
 const START_BANK = 0;
-
-// 🔹 Start year of season
 const SEASON_START_YEAR = 2025;
 
-// Parse date dd/mm → Date object
+// 🔹 Parse date dd/mm → Date object
 function parseDate(ddmm) {
-  if (!ddmm || typeof ddmm !== 'string') return null;
-  const parts = ddmm.split('/');
-  if (parts.length !== 2) return null;
-  const [day, month] = parts;
-  if (!day || !month) return null;
-  const m = parseInt(month, 10);
-  const d = parseInt(day, 10);
-  if (isNaN(m) || isNaN(d)) return null;
-  const y = m >= 8 ? SEASON_START_YEAR : SEASON_START_YEAR + 1; // Aug–Dec = 2025, Jan–Jul = 2026
-  return new Date(`${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`);
+  if (!ddmm) return null;
+  const [day, month] = ddmm.split('/');
+  const y = parseInt(month, 10) >= 8 ? SEASON_START_YEAR : SEASON_START_YEAR + 1;
+  return new Date(`${y}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`);
 }
 
+// 🔹 Fetch & parse Google Sheet (CSV version)
 async function fetchData() {
   try {
-    const url = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?sheet=${encodeURIComponent(SHEET_NAME)}&tqx=out:json`;
+    const url = `https://docs.google.com/spreadsheets/d/e/${sheetID}/pub?output=csv`;
     const res = await fetch(url);
-    
-    if (!res.ok) {
-      throw new Error(`HTTP error! status: ${res.status}`);
-    }
-    
-    const text = await res.text();
-    const json = JSON.parse(text.substring(47).slice(0, -2));
-    const rows = json.table.rows;
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const csvText = await res.text();
 
-    // Updated data structure to match CSV: Date, Match, Match Result, Pick, Pick Result, Odds, Parlay Odds, Parlay Result, Bank
-    let lastNonEmpty = { 
-      date: null, 
-      match: null, 
-      matchResult: null,
-      pick: null, 
-      pickResult: null,
-      odds: null, 
-      parlayOdds: null, 
-      parlayResult: null,
-      bank: null 
-    };
+    const [headerLine, ...rows] = csvText.trim().split('\n');
+    const headers = headerLine.split(',');
 
-    rawData = rows.map(r => {
+    let last = {};
+    rawData = rows.map(row => {
+      const values = row.split(',');
       const obj = {
-        date: r.c[0]?.v ?? lastNonEmpty.date,
-        match: r.c[1]?.v ?? lastNonEmpty.match,
-        matchResult: r.c[2]?.v ?? lastNonEmpty.matchResult,
-        pick: r.c[3]?.v ?? lastNonEmpty.pick,
-        pickResult: r.c[4]?.v ?? lastNonEmpty.pickResult,
-        odds: r.c[5]?.v ?? lastNonEmpty.odds,
-        parlayOdds: r.c[6]?.v ?? lastNonEmpty.parlayOdds,
-        parlayResult: r.c[7]?.v ?? lastNonEmpty.parlayResult,
-        bank: r.c[8]?.v ?? lastNonEmpty.bank
+        date: values[0] || last.date || "",
+        match: values[1] || last.match || "",
+        matchResult: values[2] || last.matchResult || "",
+        pick: values[3] || last.pick || "",
+        pickResult: values[4] || last.pickResult || "",
+        odds: parseFloat(values[5]) || last.odds || 0,
+        parlayOdds: parseFloat(values[6]) || last.parlayOdds || 0,
+        parlayResult: values[7] || "",
+        bank: parseFloat(values[8]) || last.bank || 0
       };
-
-      // Update lastNonEmpty with non-null values
-      Object.keys(obj).forEach(k => {
-        if (obj[k] !== null && obj[k] !== undefined && obj[k] !== '') {
-          lastNonEmpty[k] = obj[k];
-        }
-      });
-
+      last = {...last, ...obj};
       return obj;
     }).filter(r => r.date && r.match && r.pick && r.odds);
 
     populateSeasonAndMonths();
-    
   } catch (err) {
-    console.error("Error fetching data", err);
-    // Update UI to show error if elements exist
-    const seasonBank = document.getElementById("seasonBank");
-    const seasonWins = document.getElementById("seasonWins");
-    const seasonLosses = document.getElementById("seasonLosses");
-    const seasonPickWins = document.getElementById("seasonPickWins");
-    const seasonPickLosses = document.getElementById("seasonPickLosses");
-    
-    if (seasonBank) seasonBank.innerText = "Bank: Error loading";
-    if (seasonWins) seasonWins.innerText = "Parlay W: Error";
-    if (seasonLosses) seasonLosses.innerText = "Parlay L: Error";
-    if (seasonPickWins) seasonPickWins.innerText = "Pick W: Error";
-    if (seasonPickLosses) seasonPickLosses.innerText = "Pick L: Error";
+    console.error(err);
+    document.getElementById("seasonBank").innerText = "Bank: Error";
+    document.getElementById("seasonParlayStats").innerText = "Parlay: Error";
+    document.getElementById("seasonPickStats").innerText = "Picks: Error";
   }
 }
-
 function getParlayStats(parlays) {
   let parlayWins = 0, parlayLosses = 0;
   let pickWins = 0, pickLosses = 0;
@@ -344,21 +303,29 @@ function renderParlaysForMonth(monthData, container) {
         const dateStr = jsDate ? jsDate.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit' }) : "??/??";
 
         parlayDiv.innerHTML = `
-          <div class="parlay-meta">
+          <div class="parlay-header">
             <span class="parlay-date">${dateStr}</span>
-            <span class="sep">•</span>
+            <span class="parlay-status">${parlayResult === "won" ? "WON" : "LOST"}</span>
+          </div>
+          <div class="parlay-body">
+            ${parlay.map(m => {
+              const pickResult = (m.pickResult || "").toLowerCase();
+              const pickClass = pickResult === "won" ? "won" : (pickResult === "lost" ? "lost" : "");
+              return `
+                <div class="match ${pickClass}">
+                  <div class="match-info">
+                    <div class="match-teams">${m.match}</div>
+                    <div class="match-pick">Pick: ${m.pick}</div>
+                    <div class="match-result">Result: ${m.matchResult || "N/A"}</div>
+                  </div>
+                  <div class="match-odds">${m.odds}</div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+          <div class="parlay-footer">
             <span class="total-odds">Total Odds: ${parlayOdds || "N/A"}</span>
           </div>
-          ${parlay.map(m => {
-            const pickResult = (m.pickResult || "").toLowerCase();
-            const pickClass = pickResult === "won" ? "won" : (pickResult === "lost" ? "lost" : "");
-            return `
-              <div class="match ${pickClass}">
-                <span>${m.match} (${m.pick}) - Result: ${m.matchResult || "N/A"}</span>
-                <span>${m.odds}</span>
-              </div>
-            `;
-          }).join('')}
         `;
 
         container.appendChild(parlayDiv);
