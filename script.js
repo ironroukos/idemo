@@ -1,308 +1,308 @@
-// 🔹 Google Sheet ID & sheet
-const sheetID = "2PACX-1vSbcPcRbgUdW1O-TF-kKKFERDDZKZudEyaQ8w6oewMpSNnFIyfrhKxF1tL96f3mfpzFISvgabB3qUpu";
-const SHEET_NAME = "season 2025-2026"; // default sheet name
-
-// 🔹 Store data
-let rawData = [];
-const START_BANK = 0;
-const SEASON_START_YEAR = 2025;
-
-// 🔹 Parse date dd/mm → Date object
-function parseDate(ddmm) {
-  if (!ddmm) return null;
-  const [day, month] = ddmm.split('/');
-  const y = parseInt(month, 10) >= 8 ? SEASON_START_YEAR : SEASON_START_YEAR + 1;
-  return new Date(`${y}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`);
+/* =======================
+   General Styles
+======================= */
+body {
+  background-color: #000;
+  color: #fff;
+  font-family: 'Dancing Script', cursive;
+  padding: 20px;
+  margin: 0;
+  min-height: 100vh;
 }
 
-// 🔹 Fetch & parse Google Sheet (CSV version)
-async function fetchData() {
-  try {
-    const url = `https://docs.google.com/spreadsheets/d/e/${sheetID}/pub?output=csv`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const csvText = await res.text();
-
-    const [headerLine, ...rows] = csvText.trim().split('\n');
-    const headers = headerLine.split(',');
-
-    let last = {};
-    rawData = rows.map(row => {
-      const values = row.split(',');
-      const obj = {
-        date: values[0] || last.date || "",
-        match: values[1] || last.match || "",
-        matchResult: values[2] || last.matchResult || "",
-        pick: values[3] || last.pick || "",
-        pickResult: values[4] || last.pickResult || "",
-        odds: parseFloat(values[5]) || last.odds || 0,
-        parlayOdds: parseFloat(values[6]) || last.parlayOdds || 0,
-        parlayResult: values[7] || "",
-        bank: parseFloat(values[8]) || last.bank || 0
-      };
-      last = {...last, ...obj};
-      return obj;
-    }).filter(r => r.date && r.match && r.pick && r.odds);
-
-    populateSeasonAndMonths();
-  } catch (err) {
-    console.error(err);
-    document.getElementById("seasonBank").innerText = "Bank: Error";
-    document.getElementById("seasonParlayRecord").innerText = "Parlays WL: Error";
-    document.getElementById("seasonPickRecord").innerText = "Picks WL: Error";
-  }
+h1 {
+  color: limegreen;
+  font-size: 3em;
+  text-align: center;
+  margin-bottom: 20px;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
 }
 
-// 🔹 Compute Parlay & Pick Stats
-function getParlayStats(parlays) {
-  let parlayWins = 0, parlayLosses = 0;
-  let pickWins = 0, pickLosses = 0;
-  let finalBank = START_BANK;
-
-  const sortedParlays = Object.entries(parlays).sort(([keyA, parlayA], [keyB, parlayB]) => {
-    const dateA = parseDate(parlayA[0].date);
-    const dateB = parseDate(parlayB[0].date);
-    return dateA - dateB;
-  });
-
-  sortedParlays.forEach(([key, parlay]) => {
-    const parlayResult = (parlay[0].parlayResult || "").toLowerCase();
-    if (parlayResult === "won") parlayWins++;
-    else if (parlayResult === "lost") parlayLosses++;
-
-    parlay.forEach(pick => {
-      const pickResult = (pick.pickResult || "").toLowerCase();
-      if (pickResult === "won") pickWins++;
-      else if (pickResult === "lost") pickLosses++;
-    });
-
-    const bankValue = Number(parlay[parlay.length - 1].bank);
-    if (!isNaN(bankValue)) finalBank = bankValue;
-  });
-
-  return { parlayWins, parlayLosses, pickWins, pickLosses, bank: finalBank };
+/* =======================
+   Buttons
+======================= */
+.month-toggle-btn, .season-btn {
+  font-family: 'Dancing Script', cursive;
+  font-size: 2.2rem;
+  background: transparent;
+  color: #fff;
+  border: 2px solid limegreen;
+  border-radius: 20px;
+  cursor: pointer;
+  padding: 24px 32px;
+  margin: 28px auto 16px auto;
+  width: 97%;
+  max-width: 700px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  box-sizing: border-box;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
 }
 
-// 🔹 Populate season & month stats
-function populateSeasonAndMonths() {
-  const parlaysByMonth = {};
-  const monthDates = {};
-
-  rawData.forEach(item => {
-    const jsDate = parseDate(item.date);
-    if (!jsDate) return;
-    const month = jsDate.toLocaleString('default', { month: 'long' });
-    if (!parlaysByMonth[month]) parlaysByMonth[month] = {};
-    if (!parlaysByMonth[month][item.date]) parlaysByMonth[month][item.date] = {};
-    if (!parlaysByMonth[month][item.date][item.parlayOdds]) parlaysByMonth[month][item.date][item.parlayOdds] = [];
-    parlaysByMonth[month][item.date][item.parlayOdds].push(item);
-
-    if (!monthDates[month] || jsDate > monthDates[month]) monthDates[month] = jsDate;
-  });
-
-  let allParlays = {};
-  Object.values(parlaysByMonth).forEach(monthGroup => {
-    Object.values(monthGroup).forEach(dateGroup => {
-      Object.values(dateGroup).forEach(parlayArr => {
-        const key = parlayArr[0].date + "_" + parlayArr[0].parlayOdds;
-        allParlays[key] = parlayArr;
-      });
-    });
-  });
-
-  const seasonStats = getParlayStats(allParlays);
-  const currentBank = seasonStats.bank;
-  const bankColor = currentBank > START_BANK ? "limegreen" : (currentBank < START_BANK ? "red" : "gold");
-
-  document.getElementById("seasonBank").innerHTML = `Bank: <span style="color:${bankColor}">${currentBank.toFixed(2)}</span>`;
-  document.getElementById("seasonParlayRecord").innerText = `Parlays WL: ${seasonStats.parlayWins}-${seasonStats.parlayLosses}`;
-  document.getElementById("seasonPickRecord").innerText = `Picks WL: ${seasonStats.pickWins}-${seasonStats.pickLosses}`;
-
-  const sortedMonths = Object.keys(parlaysByMonth).sort((a, b) => monthDates[a] - monthDates[b]);
-  const monthStatsMap = {};
-
-  sortedMonths.forEach(month => {
-    let monthParlays = {};
-    Object.values(parlaysByMonth[month]).forEach(dateGroup => {
-      Object.values(dateGroup).forEach(parlayArr => {
-        const key = parlayArr[0].date + "_" + parlayArr[0].parlayOdds;
-        monthParlays[key] = parlayArr;
-      });
-    });
-
-    let parlayWins = 0, parlayLosses = 0, pickWins = 0, pickLosses = 0;
-    Object.values(monthParlays).forEach(parlay => {
-      const parlayResult = (parlay[0].parlayResult || "").toLowerCase();
-      if (parlayResult === "won") parlayWins++;
-      else if (parlayResult === "lost") parlayLosses++;
-      parlay.forEach(pick => {
-        const pickResult = (pick.pickResult || "").toLowerCase();
-        if (pickResult === "won") pickWins++;
-        else if (pickResult === "lost") pickLosses++;
-      });
-    });
-
-    let finalBankForMonth = START_BANK;
-    const monthDatesArray = Object.keys(parlaysByMonth[month]).sort((a, b) => parseDate(b) - parseDate(a));
-    if (monthDatesArray.length > 0) {
-      const latestDate = monthDatesArray[0];
-      const latestDateParlays = Object.values(parlaysByMonth[month][latestDate]);
-      if (latestDateParlays.length > 0) {
-        const lastParlay = latestDateParlays[latestDateParlays.length - 1];
-        const bankValue = Number(lastParlay[lastParlay.length - 1].bank);
-        if (!isNaN(bankValue)) finalBankForMonth = bankValue;
-      }
-    }
-
-    monthStatsMap[month] = { parlayWins, parlayLosses, pickWins, pickLosses, bank: finalBankForMonth };
-  });
-
-  // Season dropdown
-  const seasonDropdown = document.getElementById("seasonDropdown");
-  if (seasonDropdown) {
-    seasonDropdown.innerHTML = "";
-    sortedMonths.forEach(month => {
-      const stats = monthStatsMap[month];
-      const bankColor = stats.bank > START_BANK ? "limegreen" : (stats.bank < START_BANK ? "red" : "gold");
-      const monthSummary = document.createElement("div");
-      monthSummary.className = "month-summary";
-      monthSummary.innerHTML = `
-        <span class="month-summary-name">${month}</span>
-        <span class="month-summary-stats">
-          Parlays WL: ${stats.parlayWins}-${stats.parlayLosses} | 
-          Picks WL: ${stats.pickWins}-${stats.pickLosses}
-        </span>
-        <span class="month-summary-bank">Bank: <span style="color:${bankColor}">${stats.bank.toFixed(2)}</span></span>
-      `;
-      seasonDropdown.appendChild(monthSummary);
-    });
-  }
-
-  const seasonButton = document.getElementById("seasonButton");
-  if (seasonButton) {
-    const newSeasonButton = seasonButton.cloneNode(true);
-    seasonButton.parentNode.replaceChild(newSeasonButton, seasonButton);
-    newSeasonButton.addEventListener("click", () => {
-      document.querySelectorAll('.parlays-dropdown').forEach(el => {
-        if (el.id !== 'seasonDropdown') el.style.display = "none";
-      });
-      const dropdown = document.getElementById("seasonDropdown");
-      if (dropdown) dropdown.style.display = dropdown.style.display === "none" ? "block" : "none";
-    });
-  }
-
-  const container = document.getElementById("monthButtons");
-  if (container) {
-    container.innerHTML = "";
-    [...sortedMonths].sort((a, b) => monthDates[b] - monthDates[a]).forEach(month => {
-      const stats = monthStatsMap[month];
-      const bankColor = stats.bank > START_BANK ? "limegreen" : (stats.bank < START_BANK ? "red" : "gold");
-
-      const btn = document.createElement("button");
-      btn.className = "month-toggle-btn";
-      
-      const monthNameSpan = document.createElement("span");
-      monthNameSpan.className = "month-name";
-      monthNameSpan.textContent = month;
-      
-      const monthStatsSpan = document.createElement("span");
-      monthStatsSpan.className = "month-stats";
-      monthStatsSpan.innerHTML = `
-        <span>Parlays WL: ${stats.parlayWins}-${stats.parlayLosses}</span> | 
-        <span>Picks WL: ${stats.pickWins}-${stats.pickLosses}</span>
-      `;
-      
-      const bankDisplaySpan = document.createElement("span");
-      bankDisplaySpan.className = "bank-display";
-      bankDisplaySpan.innerHTML = `Bank: <span style="color:${bankColor}">${stats.bank.toFixed(2)}</span>`;
-      
-      btn.appendChild(monthNameSpan);
-      btn.appendChild(monthStatsSpan);
-      btn.appendChild(bankDisplaySpan);
-
-      const parlaysContainer = document.createElement("div");
-      parlaysContainer.className = "parlays-dropdown";
-      parlaysContainer.style.display = "none";
-      parlaysContainer.style.marginTop = "5px";
-      renderParlaysForMonth(parlaysByMonth[month], parlaysContainer);
-
-      btn.addEventListener("click", () => {
-        const seasonDropdown = document.getElementById("seasonDropdown");
-        if (seasonDropdown) seasonDropdown.style.display = "none";
-        document.querySelectorAll('.parlays-dropdown').forEach(el => {
-          if (el !== parlaysContainer && el.id !== 'seasonDropdown') el.style.display = "none";
-        });
-        parlaysContainer.style.display = parlaysContainer.style.display === "none" ? "block" : "none";
-      });
-
-      container.appendChild(btn);
-      container.appendChild(parlaysContainer);
-    });
-  }
+.month-toggle-btn:hover, .season-btn:hover {
+  background: rgba(0,255,0,0.1);
+  border-color: #55ff55;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.4);
 }
 
-// 🔹 Render parlays for a month
-function renderParlaysForMonth(monthData, container) {
-  const dateGroups = {};
+.month-name, .season-title {
+  font-size: 2rem;
+  white-space: nowrap;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.month-stats, .season-stats {
+  font-size: 1.25rem;
+  font-family: Arial, sans-serif;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+}
+
+.bank-display {
+  font-size: 1.4rem;
+  font-weight: bold;
+  margin-top: 6px;
+  padding: 6px 10px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 6px;
+}
+
+/* =======================
+   Dropdowns
+======================= */
+.parlays-dropdown {
+  display: none;
+  background: linear-gradient(135deg, #111 0%, #1a1a1a 100%);
+  border: 1px solid #333;
+  border-left: 3px solid limegreen;
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin-top: 5px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  transition: all 0.3s ease;
+}
+
+.parlays-dropdown.show {
+  display: block;
+}
+
+.month-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  margin: 8px 0;
+  background: rgba(255,255,255,0.05);
+  border-radius: 8px;
+  font-family: Arial, sans-serif;
+}
+
+.month-summary-name {
+  font-family: 'Dancing Script', cursive;
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: limegreen;
+  flex: 1;
+  text-align: left;
+}
+
+.month-summary-stats {
+  flex: 2;
+  text-align: center;
+  font-size: 1rem;
+}
+
+.month-summary-bank {
+  flex: 1;
+  text-align: right;
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+/* =======================
+   Parlay Cards
+======================= */
+.parlay {
+  opacity: 0;
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: all 0.4s ease;
+  margin: 12px 0;
+  border-radius: 16px;
+  background: #1a1a1a;
+  border: 3px solid;
+}
+
+.parlay.show { 
+  opacity: 1; 
+  transform: scaleY(1); 
+}
+
+.parlay.won { 
+  border-color: limegreen; 
+  background: linear-gradient(135deg, #1a1a1a 0%, #0f2f0f 100%); 
+}
+
+.parlay.lost { 
+  border-color: #ff4444; 
+  background: linear-gradient(135deg, #1a1a1a 0%, #2f0f0f 100%); 
+}
+
+.parlay-body { padding: 16px; }
+.parlay-footer { 
+  background: rgba(255,255,255,0.05); 
+  padding: 12px 16px; 
+  border-top: 1px solid #444; 
+  text-align: center; 
+  font-weight: bold; 
+}
+
+.parlay .match {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 1rem;
+  margin: 8px 0;
+  padding: 12px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.15);
+  border-left: 4px solid #666;
+}
+
+.parlay .match.won { 
+  color: limegreen; 
+  border-left-color: limegreen; 
+  background: rgba(0,255,0,0.2); 
+}
+
+.parlay .match.lost { 
+  color: #ff6b6b; 
+  border-left-color: #ff6b6b; 
+  background: rgba(255,0,0,0.2); 
+}
+
+.match-info { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+.match-teams { font-weight: bold; font-size: 1rem; }
+.match-pick { font-size: 0.9rem; opacity: 0.9; }
+.match-odds { font-weight: bold; padding: 8px 12px; background: rgba(255,255,255,0.2); border-radius: 6px; min-width: 50px; text-align: center; }
+
+.parlay.won .match-odds { background: rgba(0,255,0,0.2); color: limegreen; }
+.parlay.lost .match-odds { background: rgba(255,0,0,0.2); color: #ff6b6b; }
+
+/* =======================
+   Date Divider
+======================= */
+.date-divider {
+  text-align: center;
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: limegreen;
+  margin: 24px 0 16px 0;
+  padding: 12px;
+  background: rgba(0,255,0,0.1);
+  border: 2px solid limegreen;
+  border-radius: 12px;
+  font-family: Arial, sans-serif;
+}
+
+/* =======================
+   Responsive
+======================= */
+@media (max-width: 768px) {
+  body { padding: 15px; }
+  h1 { font-size: 2.2em; margin-bottom: 15px; }
+  .month-toggle-btn, .season-btn { font-size: 1.4rem; padding: 18px 16px; border-radius: 16px; margin: 16px auto 12px auto; width: 98%; }
+  .month-name, .season-title { font-size: 1.3rem; margin-bottom: 8px; }
+  .month-stats, .season-stats { font-size: 1rem; }
+  .bank-display { font-size: 1.2rem; }
+  .parlays-dropdown { padding: 12px 8px; margin-top: 5px; border-radius: 12px; }
+  .date-divider { font-size: 1.5rem; margin: 20px 0 12px 0; padding: 10px; }
+  .parlay { margin: 10px 0; border-radius: 12px; }
+  .parlay-body { padding: 12px; }
+  .parlay .match { padding: 10px; margin: 6px 0; }
+  .match-teams { font-size: 0.95rem; }
+  .match-pick { font-size: 0.85rem; }
+  .match-odds { font-size: 1rem; padding: 6px 10px; }
+}
+
+@media (max-width: 480px) {
+  body { padding: 10px; }
+  h1 { font-size: 1.8em; }
+  .month-toggle-btn, .season-btn { font-size: 1.2rem; padding: 14px 12px; }
+  .month-name, .season-title { font-size: 1.1rem; }
+  .month-stats, .season-stats { font-size: 0.9rem; }
+  .bank-display { font-size: 1.1rem; }
+}
+
+@media (min-width: 800px) {
+  #monthButtons { display: flex; flex-direction: column; align-items: center; max-width: 900px; margin: 0 auto; }
+  .month-toggle-btn, .season-btn, .parlays-dropdown { max-width: 800px; width: 100%; }
+  .parlay { max-width: 100%; margin: 12px auto; }
+  .month-toggle-btn, .season-btn { flex-direction: row; justify-content: space-between; align-items: center; text-align: left; }
+  .month-name, .season-title { margin-bottom: 0; }
+  .month-stats, .season-stats { justify-content: center; flex: 1; }
+  .bank-display { margin-top: 0; margin-left: 12px; }
   
-  // Group parlays by date
-  Object.keys(monthData)
-    .sort((a, b) => parseDate(b) - parseDate(a))
-    .forEach(date => {
-      if (!dateGroups[date]) dateGroups[date] = [];
-      const dateGroup = monthData[date];
-      Object.keys(dateGroup).forEach(parlayOdds => {
-        const parlay = dateGroup[parlayOdds];
-        if (parlay[0].match && parlay[0].pick && parlay[0].odds) {
-          dateGroups[date].push({ parlayOdds, parlay });
-        }
-      });
-    });
-
-  // Render each date group
-  Object.keys(dateGroups).forEach(date => {
-    const jsDate = parseDate(date);
-    if (!jsDate) return;
-
-    // Create date divider
-    const dateDiv = document.createElement("div");
-    dateDiv.className = "date-divider";
-    dateDiv.textContent = jsDate.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit' });
-    container.appendChild(dateDiv);
-
-    // Render parlays for this date
-    dateGroups[date].forEach(({ parlayOdds, parlay }) => {
-      const parlayResult = (parlay[0].parlayResult || "").toLowerCase();
-      
-      const parlayDiv = document.createElement("div");
-      parlayDiv.classList.add("parlay", parlayResult === "won" ? "won" : "lost");
-      parlayDiv.innerHTML = `
-        <div class="parlay-body">
-          ${parlay.map(m => {
-            const pickResult = (m.pickResult || "").toLowerCase();
-            const pickClass = pickResult === "won" ? "won" : (pickResult === "lost" ? "lost" : "");
-            const resultText = m.matchResult ? `(${m.matchResult})` : "";
-            return `
-              <div class="match ${pickClass}">
-                <div class="match-info">
-                  <div class="match-teams">${m.match}</div>
-                  <div class="match-pick">${m.pick} ${resultText}</div>
-                </div>
-                <div class="match-odds">${m.odds}</div>
-              </div>
-            `;
-          }).join('')}
-        </div>
-        <div class="parlay-footer">
-          <span class="total-odds">Parlay Odds: ${parlayOdds || "N/A"}</span>
-        </div>
-      `;
-      container.appendChild(parlayDiv);
-      setTimeout(() => parlayDiv.classList.add("show"), 50);
-    });
-  });
+  /* Special layout for season button on desktop */
+  .season-btn {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+    gap: 20px;
+    align-items: center;
+    text-align: center;
+  }
+  
+  .season-btn .season-title {
+    text-align: left;
+    justify-self: start;
+  }
+  
+  .season-btn .season-stats {
+    justify-self: center;
+  }
+  
+  .season-btn .bank-display {
+    justify-self: end;
+    margin: 0;
+  }
+  
+  /* Apply same layout to month buttons */
+  .month-toggle-btn {
+    display: grid !important;
+    grid-template-columns: 1fr 2fr 1fr;
+    gap: 20px;
+    align-items: center;
+    text-align: center;
+  }
+  
+  .month-toggle-btn .month-name {
+    text-align: left;
+    justify-self: start;
+    margin-bottom: 0;
+  }
+  
+  .month-toggle-btn .month-stats {
+    justify-self: center;
+  }
+  
+  .month-toggle-btn .bank-display {
+    justify-self: end;
+    margin: 0;
+  }
+  
+  /* Center align dropdowns */
+  .parlays-dropdown {
+    margin: 5px auto 0 auto;
+    width: 100%;
+    max-width: 800px;
+  }
 }
-
-// 🔹 Auto-refresh every 60s
-fetchData();
-setInterval(fetchData, 60000);
