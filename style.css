@@ -4,7 +4,7 @@
 body {
   background-color: #000;
   color: #fff;
-  font-family: 'Dancing Script', cursive;
+  font-family: 'Fira Sans', sans-serif;
   padding: 20px;
   margin: 0;
   min-height: 100vh;
@@ -12,6 +12,7 @@ body {
 
 h1 {
   color: limegreen;
+  font-family: 'Dancing Script', cursive;
   font-size: 3em;
   text-align: center;
   margin-bottom: 20px;
@@ -22,8 +23,8 @@ h1 {
    Buttons
 ======================= */
 .month-toggle-btn, .season-btn {
-  font-family: 'Dancing Script', cursive;
-  font-size: 2.2rem;
+  font-family: 'Fira Sans', sans-serif;
+  font-size: 1.2rem;
   background: transparent;
   color: #fff;
   border: 2px solid limegreen;
@@ -50,15 +51,15 @@ h1 {
 }
 
 .month-name, .season-title {
-  font-size: 1.75rem;
+  font-size: 1.4rem;
   white-space: nowrap;
   font-weight: 600;
   margin-bottom: 8px;
 }
 
 .month-stats, .season-stats {
-  font-size: 1.5rem;
-  font-family: 'Dancing Script', cursive;
+  font-size: 1.1rem;
+  font-family: 'Fira Sans', sans-serif;
   display: flex;
   gap: 8px;
   align-items: center;
@@ -67,7 +68,7 @@ h1 {
 }
 
 .bank-display {
-  font-size: 1.4rem;
+  font-size: 1.2rem;
   font-weight: bold;
   margin-top: 6px;
   padding: 6px 10px;
@@ -102,12 +103,12 @@ h1 {
   margin: 8px 0;
   background: rgba(255,255,255,0.05);
   border-radius: 8px;
-  font-family: Arial, sans-serif;
+  font-family: 'Fira Sans', sans-serif;
 }
 
 .month-summary-name {
-  font-family: 'Dancing Script', cursive;
-  font-size: 1.75rem;
+  font-family: 'Fira Sans', sans-serif;
+  font-size: 1.4rem;
   font-weight: 600;
   color: limegreen;
   flex: 1;
@@ -117,18 +118,18 @@ h1 {
 .month-summary-stats {
   flex: 2;
   text-align: center;
-  font-size: 1.5rem;
-  font-family: 'Dancing Script', cursive;
+  font-size: 1.1rem;
+  font-family: 'Fira Sans', sans-serif;
 }
 
 .month-summary-bank {
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   font-weight: bold;
   margin-top: 6px;
   padding: 6px 10px;
   background: rgba(255,255,255,0.2);
   border-radius: 6px;
-  font-family: 'Dancing Script', cursive;
+  font-family: 'Fira Sans', sans-serif;
 }
 
 /* =======================
@@ -167,14 +168,14 @@ h1 {
   border-top: 1px solid #444; 
   text-align: right; 
   font-weight: bold;
-  font-family: Arial, sans-serif;
+  font-family: 'Fira Sans', sans-serif;
 }
 
 .parlay .match {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Fira Sans', sans-serif;
   font-size: 1rem;
   margin: 8px 0;
   padding: 12px;
@@ -208,7 +209,7 @@ h1 {
 ======================= */
 .date-divider {
   text-align: center;
-  font-size: 1.8rem;
+  font-size: 1.4rem;
   font-weight: bold;
   color: limegreen;
   margin: 24px 0 16px 0;
@@ -216,7 +217,7 @@ h1 {
   background: #000;
   border: 2px solid #fff;
   border-radius: 12px;
-  font-family: 'Dancing Script', cursive;
+  font-family: 'Fira Sans', sans-serif;
 }
 
 /* =======================
@@ -225,12 +226,12 @@ h1 {
 @media (max-width: 768px) {
   body { padding: 15px; }
   h1 { font-size: 2.2em; margin-bottom: 15px; }
-  .month-toggle-btn, .season-btn { font-size: 1.4rem; padding: 18px 16px; border-radius: 16px; margin: 16px auto 12px auto; width: 98%; }
-  .month-name, .season-title { font-size: 1.3rem; margin-bottom: 8px; }
-  .month-stats, .season-stats { font-size: 1rem; }
-  .bank-display { font-size: 1.2rem; }
+  .month-toggle-btn, .season-btn { font-size: 1rem; padding: 18px 16px; border-radius: 16px; margin: 16px auto 12px auto; width: 98%; }
+  .month-name, .season-title { font-size: 1.2rem; margin-bottom: 8px; }
+  .month-stats, .season-stats { font-size: 0.95rem; }
+  .bank-display { font-size: 1.1rem; }
   .parlays-dropdown { padding: 12px 8px; margin-top: 5px; border-radius: 12px; }
-  .date-divider { font-size: 1.5rem; margin: 20px 0 12px 0; padding: 10px; }
+  .date-divider { font-size: 1.2rem; margin: 20px 0 12px 0; padding: 10px; }
   .parlay { margin: 10px 0; border-radius: 12px; }
   .parlay-body { padding: 12px; }
   .parlay .match { padding: 10px; margin: 6px 0; }
@@ -242,10 +243,10 @@ h1 {
 @media (max-width: 480px) {
   body { padding: 10px; }
   h1 { font-size: 1.8em; }
-  .month-toggle-btn, .season-btn { font-size: 1.2rem; padding: 14px 12px; }
-  .month-name, .season-title { font-size: 1.4rem; }
-  .month-stats, .season-stats { font-size: 1.2rem; }
-  .bank-display { font-size: 1.1rem; }
+  .month-toggle-btn, .season-btn { font-size: 0.9rem; padding: 14px 12px; }
+  .month-name, .season-title { font-size: 1.1rem; }
+  .month-stats, .season-stats { font-size: 0.9rem; }
+  .bank-display { font-size: 1rem; }
 }
 
 @media (min-width: 800px) {
