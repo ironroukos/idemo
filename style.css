@@ -1,1 +1,377 @@
+/* =======================
+   Control Buttons
+======================= */
+.control-buttons {
+  text-align: center;
+  margin-bottom: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+}
 
+.btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  font-family: 'Fira Sans', sans-serif;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.btn-primary {
+  background: limegreen;
+  color: #000;
+}
+
+.btn-primary:hover {
+  background: #55ff55;
+}
+
+.btn-secondary {
+  background: #555;
+  color: #fff;
+}
+
+.btn-secondary:hover {
+  background: #666;
+}
+
+.btn-danger {
+  background: #ff4444;
+  color: #fff;
+}
+
+.btn-danger:hover {
+  background: #ff5555;
+}
+
+/* =======================
+   General Styles
+======================= */
+body {
+  background-color: #000;
+  color: #fff;
+  font-family: 'Fira Sans', sans-serif;
+  padding: 20px;
+  margin: 0;
+  min-height: 100vh;
+}
+
+h1 {
+  color: limegreen;
+  font-family: 'Dancing Script', cursive;
+  font-size: 3em;
+  text-align: center;
+  margin-bottom: 20px;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+/* =======================
+   Buttons
+======================= */
+.month-toggle-btn, .season-btn {
+  font-family: 'Fira Sans', sans-serif;
+  font-size: 1.2rem;
+  background: transparent;
+  color: #fff;
+  border: 2px solid limegreen;
+  border-radius: 20px;
+  cursor: pointer;
+  padding: 24px 32px;
+  margin: 28px auto 16px auto;
+  width: 97%;
+  max-width: 700px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  box-sizing: border-box;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+.month-toggle-btn:hover, .season-btn:hover {
+  background: rgba(0,255,0,0.1);
+  border-color: #55ff55;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+}
+
+.month-name, .season-title {
+  font-size: 1.4rem;
+  white-space: nowrap;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.month-stats, .season-stats {
+  font-size: 1.1rem;
+  font-family: 'Fira Sans', sans-serif;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+.bank-display {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-top: 6px;
+  padding: 6px 10px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 6px;
+}
+
+/* =======================
+   Dropdowns
+======================= */
+.parlays-dropdown {
+  display: none;
+  background: linear-gradient(135deg, #111 0%, #1a1a1a 100%);
+  border: 1px solid #333;
+  border-left: 3px solid limegreen;
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin-top: 5px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  transition: all 0.3s ease;
+}
+
+.parlays-dropdown.show {
+  display: block;
+}
+
+.month-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  margin: 8px 0;
+  background: rgba(255,255,255,0.05);
+  border-radius: 8px;
+  font-family: 'Fira Sans', sans-serif;
+}
+
+.month-summary-name {
+  font-family: 'Fira Sans', sans-serif;
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: limegreen;
+  flex: 1;
+  text-align: left;
+}
+
+.month-summary-stats {
+  flex: 2;
+  text-align: center;
+  font-size: 1.1rem;
+  font-family: 'Fira Sans', sans-serif;
+}
+
+.month-summary-bank {
+  font-size: 1.1rem;
+  font-weight: bold;
+  margin-top: 6px;
+  padding: 6px 10px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 6px;
+  font-family: 'Fira Sans', sans-serif;
+}
+
+/* =======================
+   Parlay Cards
+======================= */
+.parlay {
+  opacity: 0;
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: all 0.4s ease;
+  margin: 6px 0;
+  border-radius: 16px;
+  background: #1a1a1a;
+  border: 3px solid;
+}
+
+.parlay.show { 
+  opacity: 1; 
+  transform: scaleY(1); 
+}
+
+.parlay.won { 
+  border-color: limegreen; 
+  background: linear-gradient(135deg, #1a1a1a 0%, #0f2f0f 100%); 
+}
+
+.parlay.lost { 
+  border-color: #ff4444; 
+  background: linear-gradient(135deg, #1a1a1a 0%, #2f0f0f 100%); 
+}
+
+.parlay-body { padding: 16px; }
+.parlay-footer { 
+  background: rgba(255,255,255,0.05); 
+  padding: 8px 16px; 
+  border-top: 1px solid #444; 
+  text-align: right; 
+  font-weight: bold;
+  font-family: 'Fira Sans', sans-serif;
+}
+
+.parlay .match {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: 'Fira Sans', sans-serif;
+  font-size: 1rem;
+  margin: 8px 0;
+  padding: 12px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.15);
+  border-left: 4px solid #666;
+}
+
+.parlay .match.won { 
+  color: limegreen; 
+  border-left-color: limegreen; 
+  background: rgba(0,255,0,0.2); 
+}
+
+.parlay .match.lost { 
+  color: #ff6b6b; 
+  border-left-color: #ff6b6b; 
+  background: rgba(255,0,0,0.2); 
+}
+
+.match-info { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+.match-teams { font-weight: bold; font-size: 1rem; }
+.match-pick { font-size: 0.9rem; opacity: 0.9; }
+.match-odds { font-weight: bold; padding: 8px 12px; background: rgba(255,255,255,0.2); border-radius: 6px; min-width: 50px; text-align: center; }
+
+.parlay.won .match-odds { background: rgba(255,255,255,0.2); color: #fff; }
+.parlay.lost .match-odds { background: rgba(255,255,255,0.2); color: #fff; }
+
+/* =======================
+   Date Divider
+======================= */
+.date-divider {
+  text-align: center;
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: limegreen;
+  margin: 24px 0 16px 0;
+  padding: 12px;
+  background: #000;
+  border: 2px solid #fff;
+  border-radius: 12px;
+  font-family: 'Fira Sans', sans-serif;
+}
+
+/* =======================
+   Responsive
+======================= */
+@media (max-width: 768px) {
+  body { padding: 15px; }
+  h1 { font-size: 2.2em; margin-bottom: 15px; }
+  .control-buttons { gap: 8px; }
+  .btn { padding: 10px 18px; font-size: 0.9rem; }
+  .month-toggle-btn, .season-btn { font-size: 1rem; padding: 18px 16px; border-radius: 16px; margin: 16px auto 12px auto; width: 98%; }
+  .month-name, .season-title { font-size: 1.2rem; margin-bottom: 8px; }
+  .month-stats, .season-stats { font-size: 0.95rem; }
+  .bank-display { font-size: 1.1rem; }
+  .parlays-dropdown { padding: 12px 8px; margin-top: 5px; border-radius: 12px; }
+  .date-divider { font-size: 1.2rem; margin: 20px 0 12px 0; padding: 10px; }
+  .parlay { margin: 10px 0; border-radius: 12px; }
+  .parlay-body { padding: 12px; }
+  .parlay .match { padding: 10px; margin: 6px 0; }
+  .match-teams { font-size: 0.95rem; }
+  .match-pick { font-size: 0.85rem; }
+  .match-odds { font-size: 1rem; padding: 6px 10px; }
+}
+
+@media (max-width: 480px) {
+  body { padding: 10px; }
+  h1 { font-size: 1.8em; }
+  .btn { padding: 10px 16px; font-size: 0.85rem; }
+  .month-toggle-btn, .season-btn { font-size: 0.9rem; padding: 14px 12px; }
+  .month-name, .season-title { font-size: 1.1rem; }
+  .month-stats, .season-stats { font-size: 0.9rem; }
+  .bank-display { font-size: 1rem; }
+}
+
+@media (min-width: 800px) {
+  #monthButtons { display: flex; flex-direction: column; align-items: center; max-width: 900px; margin: 0 auto; }
+  .month-toggle-btn, .season-btn, .parlays-dropdown { max-width: 800px; width: 100%; }
+  .parlay { max-width: 100%; margin: 12px auto; }
+  .month-toggle-btn, .season-btn { flex-direction: row; justify-content: space-between; align-items: center; text-align: left; }
+  .month-name, .season-title { margin-bottom: 0; }
+  .month-stats, .season-stats { justify-content: center; flex: 1; }
+  .bank-display { margin-top: 0; margin-left: 12px; }
+  
+  /* Special layout for season button on desktop */
+  .season-btn {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+    gap: 20px;
+    align-items: center;
+    text-align: center;
+  }
+  
+  .season-btn .season-title {
+    text-align: left;
+    justify-self: start;
+  }
+  
+  .season-btn .season-stats {
+    justify-self: center;
+  }
+  
+  .season-btn .bank-display {
+    justify-self: end;
+    margin: 0;
+  }
+  
+  /* Apply same layout to month buttons */
+  .month-toggle-btn {
+    display: grid !important;
+    grid-template-columns: 1fr 2fr 1fr;
+    gap: 20px;
+    align-items: center;
+    text-align: center;
+  }
+  
+  .month-toggle-btn .month-name {
+    text-align: left;
+    justify-self: start;
+    margin-bottom: 0;
+  }
+  
+  .month-toggle-btn .month-stats {
+    justify-self: center;
+  }
+  
+  .month-toggle-btn .bank-display {
+    justify-self: end;
+    margin: 0;
+  }
+  
+  /* Center align dropdowns */
+  .parlays-dropdown {
+    margin: 5px auto 0 auto;
+    width: 100%;
+    max-width: 800px;
+  }
+}
