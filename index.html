@@ -1,1 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roukos Bets</title>
+<!-- Google Fonts: Dancing Script and Fira Sans -->
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script&family=Fira+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<!-- CSS -->
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<h1>Roukos Bets</h1>
 
+<!-- Control Buttons -->
+<div class="control-buttons">
+  <button onclick="showAddMatchForm()" class="btn btn-primary">➕ Add Match</button>
+  <button onclick="exportData()" class="btn btn-secondary">💾 Export</button>
+  <button onclick="importData()" class="btn btn-secondary">📁 Import</button>
+  <button onclick="clearAllData()" class="btn btn-danger">🗑️ Clear All</button>
+</div>
+
+<!-- Season Stats Block -->
+<div class="season-btn">
+  <span class="season-title">Season 2025/2026</span>
+  <span class="season-stats">
+    <span id="seasonParlayRecord">Parlays WL: 0-0</span> | 
+    <span id="seasonPickRecord">Picks WL: 0-0</span>
+  </span>
+  <span class="bank-display" id="seasonBank">Bank: 0.00</span>
+</div>
+
+<!-- Month buttons -->
+<div id="monthButtons"></div>
+<!-- Parlays container -->
+<div id="parlaysContainer"></div>
+<!-- JS -->
+<script src="script.js"></script>
+</body>
+</html>
