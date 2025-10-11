@@ -1,4 +1,9 @@
-* { margin: 0; padding: 0; box-sizing: border-box; }
+/* Reset & basics */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
 body {
   background-color: #000;
@@ -6,8 +11,12 @@ body {
   font-family: 'Fira Sans', sans-serif;
   padding: 20px;
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
+/* Header */
 h1 {
   color: #00ff00;
   font-family: 'Dancing Script', cursive;
@@ -17,6 +26,7 @@ h1 {
   text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
 }
 
+/* Buttons row */
 .control-buttons {
   text-align: center;
   margin-bottom: 20px;
@@ -57,8 +67,375 @@ h1 {
   transform: translateY(-2px);
 }
 
-/* ... [KEEP ALL YOUR CSS FROM THE ORIGINAL FILE] ... */
+/* Season bar */
+.season-btn {
+  background-color: #111;
+  color: #fff;
+  padding: 12px 24px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px #00ff00;
+  font-weight: bold;
+  margin-bottom: 30px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: fit-content;
+}
 
+.season-title {
+  font-size: 1.1em;
+  color: #00ff00;
+}
+
+.bank-display {
+  color: #00ff00;
+}
+
+/* Containers */
+#parlaysContainer, #adminContainer {
+  width: 90%;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* Parlay cards */
+.parlay {
+  background-color: #111;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 20px;
+  border-left: 5px solid #00ff00;
+  box-shadow: 0 0 8px rgba(0, 255, 0, 0.2);
+}
+
+.parlay.won {
+  border-left-color: #00ff00;
+}
+
+.parlay.lost {
+  border-left-color: #ff4444;
+}
+
+.parlay-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.parlay-title {
+  font-weight: bold;
+  color: #00ff00;
+}
+
+.parlay-status {
+  font-weight: bold;
+  color: #fff;
+  background-color: #222;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.parlay-body {
+  border-top: 1px solid #333;
+  padding-top: 10px;
+}
+
+.match-in-parlay {
+  background-color: #1a1a1a;
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.match-in-parlay.won {
+  border-left: 4px solid #00ff00;
+}
+
+.match-in-parlay.lost {
+  border-left: 4px solid #ff4444;
+}
+
+.match-teams {
+  font-weight: bold;
+  font-size: 1.05em;
+}
+
+.match-meta {
+  display: flex;
+  justify-content: space-between;
+  color: #aaa;
+  font-size: 0.9em;
+  margin-top: 4px;
+}
+
+.match-result {
+  margin-top: 6px;
+  font-weight: bold;
+  text-align: right;
+}
+
+.match-result.won { color: #00ff00; }
+.match-result.lost { color: #ff4444; }
+
+/* Footer section in parlay cards */
+.parlay-footer {
+  display: flex;
+  justify-content: space-around;
+  background-color: #0a0a0a;
+  padding: 8px;
+  border-radius: 6px;
+  font-size: 0.9em;
+  border-top: 1px solid #222;
+}
+
+.footer-item {
+  text-align: center;
+}
+
+.footer-label {
+  display: block;
+  color: #aaa;
+  font-size: 0.8em;
+}
+
+.footer-value {
+  font-weight: bold;
+}
+
+/* Modal overlay */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.75);
+  justify-content: center;
+  align-items: center;
+}
+
+.modal.show {
+  display: flex;
+}
+
+/* Modal box */
+.modal-content {
+  background-color: #111;
+  color: #fff;
+  border-radius: 12px;
+  padding: 30px;
+  width: 100%;
+  max-width: 550px;
+  box-shadow: 0 0 20px rgba(0,255,0,0.5);
+  animation: fadeIn 0.3s ease;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.close-btn {
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #ff4444;
+  font-weight: bold;
+}
+
+.close-btn:hover {
+  color: #ff7777;
+}
+
+/* Form layout */
+.matches-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.match-card {
+  border: 1px solid #00ff00;
+  border-radius: 8px;
+  padding: 16px;
+  background-color: #0a0a0a;
+}
+
+.form-group {
+  margin-bottom: 12px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: bold;
+  color: #00ff00;
+}
+
+input[type="text"], input[type="number"], input[type="date"] {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #333;
+  border-radius: 6px;
+  background-color: #1a1a1a;
+  color: #fff;
+  font-size: 1rem;
+}
+
+input:focus {
+  outline: 2px solid #00ff00;
+}
+
+.form-row {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-add-match {
+  background: #00ff00;
+  color: #000;
+  font-weight: bold;
+  padding: 10px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+  border: none;
+}
+
+.btn-add-match:hover {
+  background: #55ff55;
+}
+
+.odds-display {
+  background-color: #1a1a1a;
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin: 10px 0;
+  display: flex;
+  justify-content: space-between;
+}
+
+.odds-display label {
+  font-weight: bold;
+  color: #00ff00;
+}
+
+.value {
+  font-weight: bold;
+  color: #fff;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 16px;
+}
+
+.btn-cancel, .btn-submit {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.btn-cancel {
+  background-color: #555;
+  color: #fff;
+}
+
+.btn-submit {
+  background-color: #00ff00;
+  color: #000;
+}
+
+.btn-cancel:hover {
+  background-color: #777;
+}
+
+.btn-submit:hover {
+  background-color: #33ff33;
+}
+
+/* Admin Panel */
+.admin-container {
+  display: none;
+  margin-top: 30px;
+}
+
+.admin-container.show {
+  display: block;
+}
+
+.admin-section h3 {
+  color: #00ff00;
+  margin-bottom: 10px;
+}
+
+.match-result-card {
+  background-color: #1a1a1a;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 10px;
+  border-left: 4px solid #444;
+}
+
+.match-result-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.match-result-teams {
+  font-weight: bold;
+}
+
+.match-result-status.won {
+  color: #00ff00;
+}
+
+.match-result-status.lost {
+  color: #ff4444;
+}
+
+.match-result-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-match-win {
+  background: #00ff00;
+  color: #000;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.btn-match-lose {
+  background: #ff4444;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive */
 @media (max-width: 768px) {
   h1 { font-size: 2.2em; }
   .modal-content { width: 95%; padding: 20px; }
