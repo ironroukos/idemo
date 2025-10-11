@@ -1,37 +1,70 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Roukos Bets</title>
-<!-- Google Fonts: Dancing Script and Fira Sans -->
-<link href="https://fonts.googleapis.com/css2?family=Dancing+Script&family=Fira+Sans:wght@400;600;700&display=swap" rel="stylesheet">
-<!-- CSS -->
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Roukos Bets</title>
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script&family=Fira+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<h1>Roukos Bets</h1>
-
-<!-- Control Buttons -->
-<div class="control-buttons">
-  <button onclick="showAddMatchForm()" class="btn btn-primary">➕ Add Match</button>
-</div>
-
-<!-- Season Stats Block -->
-<div class="season-btn">
-  <span class="season-title">Season 2025/2026</span>
-  <span class="season-stats">
-    <span id="seasonParlayRecord">Parlays WL: 0-0</span> | 
-    <span id="seasonPickRecord">Picks WL: 0-0</span>
-  </span>
-  <span class="bank-display" id="seasonBank">Bank: 0.00</span>
-</div>
-
-<!-- Month buttons -->
-<div id="monthButtons"></div>
-<!-- Parlays container -->
-<div id="parlaysContainer"></div>
-<!-- JS -->
-<script src="script.js"></script>
+  <h1>Roukos Bets</h1>
+  
+  <div class="control-buttons">
+    <button class="btn btn-primary" onclick="openAddMatchModal()">➕ Add Match</button>
+    <button class="btn btn-admin" onclick="toggleAdminPanel()">⚙️ Admin Panel</button>
+  </div>
+  
+  <div class="season-btn">
+    <span class="season-title">Season 2025/2026</span>
+    <span class="season-stats">
+      <span id="seasonParlayRecord">Parlays WL: 0-0</span> | 
+      <span id="seasonPickRecord">Picks WL: 0-0</span>
+    </span>
+    <span class="bank-display" id="seasonBank">Bank: 0.00</span>
+  </div>
+  
+  <div id="parlaysContainer"></div>
+  
+  <!-- ADMIN PANEL -->
+  <div class="admin-container" id="adminContainer">
+    <div class="admin-section">
+      <h3>📊 Match Results</h3>
+      <div id="matchResultsContainer"></div>
+    </div>
+  </div>
+  
+  <!-- MODAL -->
+  <div id="addMatchModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Add Match</h2>
+        <span class="close-btn" onclick="closeAddMatchModal()">&times;</span>
+      </div>
+      
+      <div id="matchesContainer" class="matches-container"></div>
+      
+      <div class="form-group">
+        <button class="btn-add-match" onclick="addMatchToForm()">+ Add Another Match</button>
+      </div>
+      
+      <div class="odds-display">
+        <label>Parlay Odds</label>
+        <div class="value" id="parlayOdds">1.00</div>
+      </div>
+      
+      <div class="form-group">
+        <label for="stakeAmount">Total Stake ($)</label>
+        <input type="number" id="stakeAmount" placeholder="Enter total stake" step="0.01" min="0">
+      </div>
+      
+      <div class="form-actions">
+        <button class="btn-cancel" onclick="closeAddMatchModal()">Cancel</button>
+        <button class="btn-submit" onclick="submitParlay()">Submit</button>
+      </div>
+    </div>
+  </div>
+  
+  <script src="script.js"></script>
 </body>
 </html>
