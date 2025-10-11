@@ -2,6 +2,19 @@ let parlayMatches = [];
 let allParlays = [];
 let matchResults = {};
 
+function saveData() {
+  localStorage.setItem('roukos_parlays', JSON.stringify(allParlays));
+}
+
+function loadData() {
+  const saved = localStorage.getItem('roukos_parlays');
+  if (saved) {
+    allParlays = JSON.parse(saved);
+    renderParlays();
+    renderAdminPanel();
+  }
+}
+
 function formatDate(date) {
   const d = new Date(date);
   const day = String(d.getDate()).padStart(2, '0');
@@ -123,6 +136,7 @@ function submitParlay() {
   };
 
   allParlays.push(parlay);
+  saveData();
   renderParlays();
   renderAdminPanel();
   closeAddMatchModal();
@@ -214,6 +228,7 @@ function setMatchResult(parlayIndex, matchId, result) {
       const hasLoss = parlay.matches.some(m => m.result === 'lost');
       parlay.status = hasLoss ? 'lost' : 'won';
     }
+    saveData();
     renderParlays();
     renderAdminPanel();
   }
@@ -235,3 +250,6 @@ window.onclick = function(event) {
   const modal = document.getElementById('addMatchModal');
   if (event.target === modal) closeAddMatchModal();
 };
+
+// Load data on startup
+window.onload = loadData;
